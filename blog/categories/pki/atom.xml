@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Pki | Blog about things]]></title>
+  <link href="http://mfrasier.github.io/blog/categories/pki/atom.xml" rel="self"/>
+  <link href="http://mfrasier.github.io/"/>
+  <updated>2014-11-11T22:03:50-05:00</updated>
+  <id>http://mfrasier.github.io/</id>
+  <author>
+    <name><![CDATA[Marty Frasier]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Getting an SSL Certificate]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/08/getting-an-ssl-certificate/"/>
+    <updated>2014-10-08T17:22:42-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/08/getting-an-ssl-certificate</id>
+    <content type="html"><![CDATA[<h2>Getting a certificate to add SSL capability to a public web server</h2>
+
+<p>We need to serve pages on a public web server via the https protocol, in addition to http.  In order to do that, we need a certificate signed by a known, generally trusted, Certificate Authority (CA).</p>
+
+<p>This documents the process we went through for a particular web server</p>
+
+<!-- more -->
+
+
+<h3>Generate a private key and Certificate Signing Request (CSR)</h3>
+
+<p>I&rsquo;m using openssl at an OS X command line; linux would be the same.  Not sure about Windows without cygwin or such.</p>
+
+<p><a href="http://www.sslshopper.com/article-most-common-openssl-commands.html">Handy list of oft-used openssl commands</a></p>
+
+<h4>Generate new 2048 bit RSA private key and CSR in one step.</h4>
+
+<pre><code>openssl req -new -newkey rsa:2048 -nodes \
+-out api.okcra.org.csr \
+-keyout api.ockra.org.key.pem \
+-subj "/C=US/ST=Virginia/L=Charlottesville/O=OK Collaborative/CN=api.okcra.org" 
+</code></pre>
+
+<p>The out parameters (-out and -keyout) are file names that will be created.  Give them meaningful names and put them in some directory dedicated to the purpose.  Set restrictive permissions on the key so that only the owner can read it and no one can write it (r&mdash;&mdash;&ndash;).</p>
+
+<p>The -nodes parameter means the private key file is not encrypted, for non-interactive use.
+I used the -subj parameter to specify the certificate subject (aka Distinguished Name or DN). If not specified openssl will prompt for the values.
+This is a host certificate, for a single host name.  The Common Name (CN) portion of the Distinguished Name is the DNS hostname of the server - it must match the name used by clients to connect to the server.</p>
+
+<h5>Verify DN of CSR is what you intended (optional, see man req for more options)</h5>
+
+<pre><code>openssl req -noout -verify -in api.okcra.org.csr -subject
+</code></pre>
+
+<h3>Submit CSR to Certificate Authority and download new signed certificate</h3>
+
+<p>The Certificate Authority (CA) will generate and sign a new x.509 SSL certificate based on the values in your CSR.</p>
+
+<p>Typically, from the CA web page, you select the type of certificate (server SSL in this case) and duration, then paste the content of your CSR file generated in step 1 into a text input control.  PEM format is Base64 encoded so it&rsquo;s text.</p>
+
+<p>The new certificate is generated and made available for download at some time in the near future.</p>
+
+<p>Download the new certificate to a file.  I usually name it the same as the key file, replacing &lsquo;key&rsquo; with &lsquo;crt&rsquo;.  e.g. api.ockra.org.crt.pem
+The certificate is publicly readable so file permissions can allow world-read access (e.g. r&ndash;r&ndash;r&ndash;)</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/11/09/testing-apollo-with-websocket/</loc>
+    
+    <lastmod>2014-11-09T17:33:48-05:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet/</loc>
+    
+    <lastmod>2014-11-08T09:48:32-05:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start/</loc>
+    
+    <lastmod>2014-11-05T19:37:35-05:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features/</loc>
+    
+    <lastmod>2014-10-11T10:24:56-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch/</loc>
+    
+    <lastmod>2014-10-10T16:40:06-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/10/kibana-and-logsene/</loc>
+    
+    <lastmod>2014-10-10T06:46:07-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/09/query-our-log-records-in-logsene/</loc>
+    
+    <lastmod>2014-10-09T16:46:04-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene/</loc>
+    
+    <lastmod>2014-10-09T16:45:39-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/09/sending-logs-to-centralized-logging-services-s/</loc>
+    
+    <lastmod>2014-10-09T11:59:34-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/2014/10/08/getting-an-ssl-certificate/</loc>
+    
+    <lastmod>2014-10-08T17:22:42-04:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  
+  <url>
+    <loc>http://mfrasier.github.io/blog/archives/</loc>
+    <lastmod>2014-11-11T22:03:50-05:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/</loc>
+    <lastmod>2014-11-11T22:03:50-05:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <url>
+    <loc>http://mfrasier.github.io/new-page/</loc>
+    <lastmod>2014-11-11T22:03:50-05:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  
+  
+</urlset>

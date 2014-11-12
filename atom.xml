@@ -1,0 +1,1233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Blog about things]]></title>
+  <link href="http://mfrasier.github.io/atom.xml" rel="self"/>
+  <link href="http://mfrasier.github.io/"/>
+  <updated>2014-11-11T22:03:50-05:00</updated>
+  <id>http://mfrasier.github.io/</id>
+  <author>
+    <name><![CDATA[Marty Frasier]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Testing Apollo With Websocket]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/11/09/testing-apollo-with-websocket/"/>
+    <updated>2014-11-09T17:33:48-05:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/11/09/testing-apollo-with-websocket</id>
+    <content type="html"><![CDATA[<p>We now have the apollo broker running on our virtual host and a route to hit for our webapp to generate messages.</p>
+
+<h4>Our setup</h4>
+
+<ul>
+<li>our web server and PHP backend app are running on our virtual machine (IP=10.0.0.10).</li>
+<li>apache apollo broker is running on the virtual machine.</li>
+<li>our webapp server will send a test message to tcp://localhost:61613/topic/okcra-api-ops when route sendStompMessage is hit.</li>
+<li>added a firewall rule to allow access to port tcp/61623 where apollo is listening for websocket connections.</li>
+<li>we want to display those messages near real-time in a web browser, running on the host.</li>
+</ul>
+
+
+<h4>web client</h4>
+
+<p>Apollo is shipped with example code, one of which is a websockets example.  The html page is located at <APOLLO_INSTALL_DIR>/examples/stomp/websocket/index.html.</p>
+
+<p>We will load that page into our browser, fill in our connection details, and connect to the apollo broker on our virtual hosts.  When successful, it will wait and display any new messages  appearing in the topic or queue.</p>
+
+<!-- more -->
+
+
+<p>Next, we will hit the URI to have the web server generate a message.  We should see that message reflected almost immediately on our test web page.</p>
+
+<p>Here is the test result.  Using curl in the terminal window to invoke the URI sent a message to the broker which was displayed on the websocket chat example page.  Success!</p>
+
+<p><img src="http://mfrasier.github.io/images/websocket_client.png"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Fun With puPHPet]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet/"/>
+    <updated>2014-11-08T09:48:32-05:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet</id>
+    <content type="html"><![CDATA[<p><a href="http://puphpet.com/">puPHPet</a> is a nifty tool to help configure a virtual PHP development evironment.  It uses <a href="https://www.vagrantup.com/">vagrant</a> to manage virtual machines with <a href="https://docs.puppetlabs.com/">puppet</a> to configure the machine.  It&rsquo;s a great start but we need some additional configurations.  This is the story of extending puPHPet to our needs.</p>
+
+<h3>puppet hiera</h3>
+
+<p>Recent puPHPpet uses puppet&rsquo;s hiera facility to provide configuration information to puppet at runtime.  I would like to utilize hiera for our additional configurations but puPHPet only seems to utilize hiera sources for a small subset of parameters.  puPHPpet help mentions a common.yaml hiera file but the code uses config.yaml instead.  That&rsquo;s confusing but ../puphpet/puppet/hiera.yaml spells it out for us.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>--
+</span><span class='line'>:backends: yaml
+</span><span class='line'>:yaml:
+</span><span class='line'>    :datadir: '/vagrant/puphpet'
+</span><span class='line'>:hierarchy:
+</span><span class='line'>    - config
+</span><span class='line'>:logger: console</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>read hiera from yaml</h5>
+
+<p>Puppet provides a command-line tool to test the hiera lookup.  Here is a simple example running on the virtual machine.</p>
+
+<!-- more -->
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ hiera postgresql --yaml /vagrant/puphpet/config.yaml --config /vagrant/puphpet/puppet/hiera.yaml
+</span><span class='line'>{"install"=>"1",
+</span><span class='line'> "settings"=>
+</span><span class='line'>  {"root_password"=>"bigsecret",
+</span><span class='line'>   "user_group"=>"postgres",
+</span><span class='line'>   "encoding"=>"UTF8",
+</span><span class='line'>   "version"=>"9.3",
+</span><span class='line'>   "listen_addresses"=>"*"},
+</span><span class='line'> "databases"=>
+</span><span class='line'>  {"YqjrqQdPkxGG"=>
+</span><span class='line'>    {"grant"=>"ALL",
+</span><span class='line'>     "name"=>"db_name",
+</span><span class='line'>     "user"=>"db_user",
+</span><span class='line'>     "password"=>"biggersecret",
+</span><span class='line'>     "sql_file"=>"/var/www/database/dumps/smalldump.sql"}},
+</span><span class='line'> "adminer"=>0</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>set listen_addresses in postgresql.conf to listen on external interface</h5>
+
+<p>I added some new parameters to the auto-generated config.yaml set to confirm puppet is reading them as expected.  I added &lsquo;settings&rsquo;=>&lsquo;listen_addresses&rsquo;.  The value is read as expected, as confirmed in the listing above.</p>
+
+<p>I want to set listen_addresses=&lsquo;*&rsquo; in postgresql.conf so the postgresql server will listen for connections on an external interface(s).</p>
+
+<p>I added the listen_addresses parameter, sourced from hiera, to the invocation of class postgresql::server in puppet/nodes/postqresql.pp.  The values in hash $postgresql_values are already read from the postgresql hiera key at the beginning of this manifest.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>...
+</span><span class='line'>    }-&gt;
+</span><span class='line'>    class { 'postgresql::server':
+</span><span class='line'>      postgres_password =&gt; $postgresql_values['settings']['root_password'],
+</span><span class='line'>      version           =&gt; $postgresql_values['settings']['version'],
+</span><span class='line'>      listen_addresses  =&gt; $postgresql_values['settings']['listen_addresses'],
+</span><span class='line'>      require           =&gt; Group[$postgresql_values['settings']['user_group']],
+</span><span class='line'>    }
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Output from the vagrant provision command shows the localhost value being changed in postgresql server config.  yay.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>==&gt; default: Notice: /Stage[main]/Postgresql::Server::Config/Postgresql::Server::Config_entry[listen_addresses]/Postgresql_conf[listen_addresses]/value: value changed 'localhost' to '*'
+</span><span class='line'>
+</span><span class='line'> ==&gt;/Stage[main]/Main/Iptables_port[kfgtd4YQS5bp]/Firewall[100 tcp/5432]/ensure: created</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>pg_hba.conf</h4>
+
+<p>Now that we are listening for connections on an external interface we must allow our heroic administrator to connect to that virtual host port via the host only network.</p>
+
+<p>After going down the wrong path trying to directly instantiate postgresql::server:pg_hba_rule classes I found postgresql::server accepts an arrray of strings to specifiy access control rules.  I only had to make an additional modification in node/postgresql.pp to pass an array from config.yaml.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>...
+</span><span class='line'>    }-&gt;
+</span><span class='line'>    class { 'postgresql::server':
+</span><span class='line'>      postgres_password =&gt; $postgresql_values['settings']['root_password'],
+</span><span class='line'>      version           =&gt; $postgresql_values['settings']['version'],
+</span><span class='line'>      listen_addresses  =&gt; $postgresql_values['settings']['listen_addresses'],
+</span><span class='line'>      ipv4acls          =&gt; $postgresql_values['settings']['ipv4acls'],
+</span><span class='line'>      require           =&gt; Group[$postgresql_values['settings']['user_group']],
+</span><span class='line'>    }
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Adding ipv4acls parameter above to nodes/postgresql.pp change enables use of ipv4acl entries during server creation.</p>
+
+<p>A couple of sample access control specifications for pg_hba.conf.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>   ipv4acls: 
+</span><span class='line'>      - 'host referall referall_admin 0.00.0/0 md5'
+</span><span class='line'>      - 'hostssl referall jamie 0.0.0.0/0 cert'</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>firewall</h4>
+
+<p>Lastly, puphpet installs firewall rules on the virtual host to allow access to TCP ports 22, 80, and 443.  That means we cannot reach postgresql server port (5432) from outside the virtual machine, i.e. the host.  Lucky for us, by default, the class postgresql::server manages the firewall settings writing a rule to allow access to port TCP/5432.</p>
+
+<p>If postgresql::params::manage_firewall == false we would have to manage our own firewall rules, which is exposed via the firewalls section of config.yaml.  This is what a firewall entry might look like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>firewall:
+</span><span class='line'>    install: '1'
+</span><span class='line'>    rules:
+</span><span class='line'>        voud9p0Db4Qz:
+</span><span class='line'>            port: '5432'
+</span><span class='line'>            priority: '100'
+</span><span class='line'>            proto: tcp
+</span><span class='line'>            action: accept</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>one more thing - sudoers</h4>
+
+<p>puPHPet has an option to populate a database by running a SQL dump file through psql.  It uses this command to accomplish the task.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>command     =&gt; "sudo -u postgres psql ${dbname} &lt; ${sql_file}",</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Vagrant creates user &lsquo;vagrant&rsquo; to enable remote login and management of the virtual machine.  The user has permission, via sudo, to run any command, without specifying a password, as the user root. The psql commmand needs to be run as user postgres to use unix socket for connection to the database.</p>
+
+<p>To enable that capability I added a file, /etc/sudoers.d/10_vagrant, to define a sudoers entry allowing user vagrant to run commands as any user, with no password.  There is already a file /etc/sudoers.d/vagrant that I should probably overwrite with this new entry.</p>
+
+<figure class='code'><figcaption><span>nodes/sudoers.pp </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># nodes/sudoers.pp</span>
+</span><span class='line'><span class="c1"># allow user vagrant to run any command as any user</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s1">&#39;/etc/sudoers.d/10_vagrant&#39;</span><span class="p">:</span>
+</span><span class='line'>  <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">file</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">owner</span> <span class="o">=&gt;</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">group</span> <span class="o">=&gt;</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">mode</span> <span class="o">=&gt;</span> <span class="s1">&#39;0440&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">content</span> <span class="o">=&gt;</span> <span class="s1">&#39;vagrant ALL=(ALL) NOPASSWD:ALL&#39;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>virtualbox fail</h4>
+
+<p>There was something wrong with a virtualbox version (4.3.10 or 4.3.11 I think) we were using.  Virtualbox did not properly create interfaces or routes for a hostonly network causing connection failure from the host machine.  Version 4.3.16 and 4.3.18 worked fine.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Apache Apollo Start]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start/"/>
+    <updated>2014-11-05T19:37:35-05:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start</id>
+    <content type="html"><![CDATA[<h2>Getting started with Apache Apollo, follow-up project to ActiveMQ</h2>
+
+<p>It&rsquo;s an all-dancing, all-singing message broker, queue manager, integration engine, etc. written in scala, running on JVM.</p>
+
+<p>Web Site: <a href="http://activemq.apache.org/apollo/">http://activemq.apache.org/apollo/</a></p>
+
+<h3>My steps to install a new broker for first steps testing&hellip;</h3>
+
+<ul>
+<li>download the gzip&rsquo;d tar file</li>
+<li>i uncompressed and exploded into /opt/apache-apollo-1.7/</li>
+<li>created a broker named okc-broker</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo /opt/apache-apollo-1.7/bin/apollo okc-broker</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>created link for init service</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo ln -s /opt/okc-broker/bin/apollo-broker-service /etc/init.d/apollo-broker-</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>start service</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo service service apollo-broker-service start</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>python test client CLI for stomp messaging protocol</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo pip install stomp.py
+</span><span class='line'>
+</span><span class='line'>$ python /usr/local/lib/python2.7/dist-packages/stomp -H localhost -P 61613 -V VERBOSE -U admin -W password
+</span><span class='line'> -- or -- stomp ... || stomp --help
+</span><span class='line'>
+</span><span class='line'>&gt; subscribe /topic/okcra-api-ops
+</span><span class='line'>Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "1"
+</span><span class='line'>
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy'
+</span><span class='line'>
+</span><span class='line'>'howdy'
+</span><span class='line'>
+</span><span class='line'>&gt; unsubscribe /topic/okcra-api-ops
+</span><span class='line'>Unsubscribing from "/topic/okcra-api-ops"
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy'
+</span><span class='line'>&gt; subscribe /topic/okcra-api-ops
+</span><span class='line'>Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "2"
+</span><span class='line'>&gt;
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy again'
+</span><span class='line'>
+</span><span class='line'>'howdy again'
+</span><span class='line'>
+</span><span class='line'>&gt; exit</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The default config requires user authentication.  There is one configured user with all rights - admin:password.</p>
+
+<p>The broker configuration, logs, data, etc are under the broker directory; mine was created at /opt/okc-broker.</p>
+
+<h3>a PHP stomp client</h3>
+
+<p>I haven&rsquo;t used PHP in a very long time and then knew nothing about frameworks, autoloaders, etc so this is a bit of a struggle but it&rsquo;s a start.</p>
+
+<h4>install the client package</h4>
+
+<p>Our backend app uses <a href="https://getcomposer.org/">composer</a> to load packages so I&rsquo;m going to integrate with that.  I also found PECL packages but picked composer for this attempt.</p>
+
+<p>I browsed packages at <a href="https://packagist.org/">https://packagist.org/</a> and found <a href="https://packagist.org/packages/fusesource/stomp-php">fusesource/stomp-php</a>.</p>
+
+<p>I added this line to the app&rsquo;s composer.json file <code>&ldquo;fusesource/stomp-php&rdquo;:&ldquo;2.1.1&rdquo;</code></p>
+
+<p>I then installed composer locally following instructions at <a href="https://getcomposer.org/doc/00-intro.md">composer</a> and ran the command to update the app&rsquo;s dependencies.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ curl -sS https://getcomposer.org/installer | php
+</span><span class='line'>$ mv composer.phar /usr/local/bin/composer
+</span><span class='line'>$ composer update</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>php code</h4>
+
+<p>There are example programs in the stomp-php package, under <app>/vendor/fusesource/stomp-php/examples/.</p>
+
+<!-- more -->
+
+
+<p>first.php is, suprisingly enough, the first example I looked at.  I want to send a message to my apollo broker running on my host, listening on port tcp:61613 so I&rsquo;m going to borrow some of the easy-looking code.</p>
+
+<figure class='code'><figcaption><span>first.php </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">require</span> <span class="nx">__DIR__</span><span class="o">.</span><span class="s1">&#39;/../vendor/autoload.php&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// include a library</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">use</span> <span class="nx">FuseSource\Stomp\Stomp</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// make a connection</span>
+</span><span class='line'><span class="nv">$con</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stomp</span><span class="p">(</span><span class="s2">&quot;tcp://localhost:61613&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="c1">// connect</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">();</span>
+</span><span class='line'><span class="c1">// send a message to the queue</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">send</span><span class="p">(</span><span class="s2">&quot;/queue/test&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;Sent message with body &#39;test&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// subscribe to the queue</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">subscribe</span><span class="p">(</span><span class="s2">&quot;/queue/test&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="c1">// receive a message from the queue</span>
+</span><span class='line'><span class="nv">$msg</span> <span class="o">=</span> <span class="nv">$con</span><span class="o">-&gt;</span><span class="na">readFrame</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// do what you want with the message</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span> <span class="nv">$msg</span> <span class="o">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="s2">&quot;Received message with body &#39;</span><span class="si">$msg-&gt;body</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="c1">// mark the message as received in the queue</span>
+</span><span class='line'>    <span class="nv">$con</span><span class="o">-&gt;</span><span class="na">ack</span><span class="p">(</span><span class="nv">$msg</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="s2">&quot;Failed to receive a message</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// disconnect</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">disconnect</span><span class="p">();</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I put some of the code in my routes.php file to do a quick connect->send->disconnect test by hitting a new route without messing with controllers or authorizations, etc.</p>
+
+<figure class='code'><figcaption><span>routes.php </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'>  <span class="k">use</span> <span class="nx">FuseSource\Stomp\Stomp</span><span class="p">;</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="nx">Route</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">&#39;sendStompMessage&#39;</span><span class="p">,</span> <span class="k">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nv">$queue</span>  <span class="o">=</span> <span class="s1">&#39;/topic/okcra-api-ops&#39;</span><span class="p">;</span>
+</span><span class='line'>  <span class="nv">$msg</span>    <span class="o">=</span> <span class="s1">&#39;message from sendStompMessage handler&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* connection */</span>
+</span><span class='line'>  <span class="k">try</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$stomp</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stomp</span><span class="p">(</span><span class="s1">&#39;tcp://localhost:61613&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$stomp</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">();</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">StompException</span> <span class="nv">$e</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span><span class="p">(</span><span class="s1">&#39;stomp connection failed: &#39;</span> <span class="o">.</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">getMessage</span><span class="p">());</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* send a message to the queue */</span>
+</span><span class='line'>  <span class="nv">$stomp</span><span class="o">-&gt;</span><span class="na">send</span><span class="p">(</span><span class="nv">$queue</span><span class="p">,</span> <span class="nv">$msg</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// close connection</span>
+</span><span class='line'>  <span class="nb">unset</span><span class="p">(</span><span class="nv">$stomp</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="s1">&#39;sent stomp message&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After some fiddling with whether i needed the use statement and it&rsquo;s placement when it did seem necessary I got this message when hitting the new route:
+<code>{&ldquo;message&rdquo;:&ldquo;Authentication failed. Credentials=[user=]&rdquo;, &hellip;</code></p>
+
+<p>That counts for some progress I suppose.  Documentation is kind of lacking here but I need to add user and password somewhere, probably either the connection uri or the connect() call.  Alternatively, I could turn off authorization but I think I&rsquo;ll leave it on and work through getting connected.  There are other available parameters, like timeouts, virtual hosts, etc.</p>
+
+<p><code>$stomp->connect(&ldquo;admin&rdquo;, &ldquo;password&rdquo;);</code> does the trick.  When the route is hit, it connects, sends a message and disconnects!</p>
+
+<p><a href="stomp.construct%20documentation">http://php.net/manual/en/stomp.construct.php</a> shows the optional username and password parameters plus another optional parameter to supply headers like receipt, timeouts, etc. as an associative array.</p>
+
+<p>To finish up this initial proof of concept I will subsribe to the topic on the virtual machine using the python stomp CLI while hitting the route in web browser on the host box.  If all goes well I&rsquo;ll see messages emmitted at the python client.</p>
+
+<pre>
+$ stomp -H localhost -P 61613 -V VERBOSE -U admin -W password
+
+> subscribe /topic/okcra-api-ops
+Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "1"
+
+- hit URL in browser -
+message from sendStompMessage handler
+
+- hit URL in browser -
+message from sendStompMessage handler
+</pre>
+
+
+<p>Woohoo!  We have completed our quick and dirty proof of concept to emit messages from the server upon some internal event which can be acted upon by loosely-coupled processes intereseted in some or all the events.  One such use case we have is client notification when resource(s) of interest have been modified or used.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Some Elasticsearch Features]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features/"/>
+    <updated>2014-10-11T10:24:56-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features</id>
+    <content type="html"><![CDATA[<p>Some nifty features of elasticsearch</p>
+
+<p>distributed, highly available, redundant, and horizontally scalable architecture
+document store using API language clients or HTTP REST interface
+indexes are like tables in RDBMS, types are like tables
+Every field in a document is indexed and can be queried.
+CRUD operations are easy
+optimistic concurrency control on update/delete ops using version parameter
+automatic versioning
+update operation merges desired changes
+groovy scripting by default, available in request body
+idempotent operations retry on update with retry_on_conflict parm
+bulk operations
+each document in an index has a type. Every type has its own mapping or schema definition.</p>
+
+<p>simple value searches, ranges, etc
+indexed, analyzed (tokenization, normalization), analyze API
+_all is a system-generated full-text field which can be disabled
+full-text search
+relevance scores in full-text search results
+phrase searches
+highligting results
+sorting results, relevance by default or can specify with sort parm
+filter DSL (term, terms, range, exists, missing, bool,)
+query DSL (match_all, match, multi_match, bool,)
+analytics
+  aggregations, nested</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Querying Elasticsearch]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch/"/>
+    <updated>2014-10-10T16:40:06-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch</id>
+    <content type="html"><![CDATA[<p>This post will begin our look at querying elasticsearch directly, via it&rsquo;s search API.  We&rsquo;ve looked at reporting and graphing tools like Kibana which provide some veneer over the actual queries.  Now we&rsquo;ll see what the queries and responses look like under the covers.</p>
+
+<p>The first query we&rsquo;ll make will search an entire index with no filter provided - we will just dump the data content.</p>
+
+<p>The API is accessible via an HTTP or HTTPS URI using the POST command.  There are many  search flavors available, documented in detail at the <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-search.html">elasticsearch search API</a>; we&rsquo;ll just touch the surface here.
+The search API is accessible using a query parameter or request body.  The query parameter is limited but good for some testing so we&rsquo;ll use that first.</p>
+
+<h4>The simplest search query ever &hellip;</h4>
+
+<p>The URI structure to invoke the simplest elasticsearch query API looks like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/_search</em></p>
+
+<!-- more -->
+
+
+<p>Using curl to invoke the simplest search query here is our response (truncated):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">curl</span> <span class="err">-XPOST</span> <span class="err">http://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/_search</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;took&quot;</span><span class="p">:</span> <span class="mi">56</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;timed_out&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;_shards&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;successful&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;hits&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">6559</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;max_score&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;hits&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>      <span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;OUR-LOGSENE-APP-TOKEN_2014-10-04&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_type&quot;</span><span class="p">:</span> <span class="s2">&quot;apache-access&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;vfo3cnGFR5mU3Yyio_eG7w&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_score&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_source&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;223.151.106.187 - - [04/Oct/2014:01:40:50 +0000] \&quot;CONNECT api.okcra.org:443 HTTP/1.1\&quot; 404 137 \&quot;-\&quot; \&quot;-\&quot;&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;@version&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;@timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2014-10-04T01:40:50.279Z&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apache-access&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ip-10-65-29-118&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/var/log/httpd/api_okcra_ssl_access_log&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;clientip&quot;</span><span class="p">:</span> <span class="s2">&quot;223.151.106.187&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;ident&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;auth&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;04/Oct/2014:01:40:50 +0000&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;verb&quot;</span><span class="p">:</span> <span class="s2">&quot;CONNECT&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;api.okcra.org:443&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;httpversion&quot;</span><span class="p">:</span> <span class="s2">&quot;1.1&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;404&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;bytes&quot;</span><span class="p">:</span> <span class="s2">&quot;137&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;referrer&quot;</span><span class="p">:</span> <span class="s2">&quot;\&quot;-\&quot;&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;agent&quot;</span><span class="p">:</span> <span class="s2">&quot;\&quot;-\&quot;&quot;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>      <span class="p">},</span>
+</span><span class='line'>      <span class="err">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The response is pretty interesting.<br/>
+The metadata at the beginning tells us the query took 56 ms across 16 shards and did not timeout.<br/>
+The hits object is an array of objects, I&rsquo;ve truncated the list at one entry from default of 10 returned objects.  There were 6,559 entries that matched our search criteria.
+The elements beginning with underscore were generated by elasticsearch when the entry was ingested.  Look, <em>_type == &lsquo;apache-access&rsquo;</em> - we&rsquo;ve seen that before!<br/>
+The <em>_source</em> object is the most interesting as it is the JSON message sent from logstash.  The <em>message</em> field is the original log entry line.  The <em>type</em> field was assigned in the logstash input specification.  The other fields are values parsed from the apache combined log format by logstash prior to shipping the json-formatted log to elasticsearch.</p>
+
+<p>You should be able to see how some of the pieces have come together now.  logstash configuration and parser (grok filter) transformed a raw apache log line into json-formatted data, sent it to elasticsearch where it was ingested, indexed by field, and made available over the network via an API for us and our applications to query.  Cool stuff indeed.</p>
+
+<h4>Search within type(s)</h4>
+
+<p>You can optionally add the record type to limit your search within that type.
+For example, if we wished to search only within type apache-access we could use a URI like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/<strong>apache-access</strong>/_search</em></p>
+
+<p>You can add multiple types, by comma-separating them like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/<strong>apache-access,syslog-cee</strong>/_search</em></p>
+
+<h4>Search for records where a field equals some value</h4>
+
+<p>Say, we want to find all apache access records where the http response code was a 400.  We could use a query like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_search<strong>?response:400</strong></em></p>
+
+<h4>A simple query body</h4>
+
+<p>This is the same query as above but uses the Query DSL body<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_search <strong>-d &lsquo;{ &ldquo;query&rdquo; : { &ldquo;term&rdquo; : { &ldquo;response&rdquo; : &ldquo;400&rdquo;} }}&rsquo;</strong></em></p>
+
+<p>DSL=Domain Specific Language so Query DSL is a language meant to describe queries in elasticsearch.  <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html">Elasticsearch Query DSL documentation</a></p>
+
+<h4>Get a simple count</h4>
+
+<p>There are lots of things we can do - one of which is simply count the number of records for a given type.  An excruciatingly simple example of using the Query DSL to count records of type apache-access might look something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">curl</span> <span class="err">-q</span> <span class="err">-XPOST</span> <span class="err">http://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_count?pretty</span> <span class="err">-d</span> <span class="err">&#39;</span><span class="p">{</span>
+</span><span class='line'>  <span class="err">query:</span> <span class="err">{</span>
+</span><span class='line'>    <span class="nt">&quot;match_all&quot;</span><span class="p">:</span> <span class="p">{}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="err">}&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;count&quot;</span><span class="p">:</span> <span class="mi">184</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;_shards&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;successful&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There are currently 184 such records.  Adding query parameter pretty told elasticsearch to pretty print the JSON response for easier consumption by humans.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Kibana and Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/10/kibana-and-logsene/"/>
+    <updated>2014-10-10T06:46:07-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/10/kibana-and-logsene</id>
+    <content type="html"><![CDATA[<p>Kibana is the name of a visualization tool for elasticsearch; it runs in your web browser.  Kibana enables you to query and view records from your elasticsearch repository.  It&rsquo;s easy to host Kibana yourself or, as we are doing here, use a hosted version.</p>
+
+<p>The data and query interface are the same as we saw in the reporting entry, of which we&rsquo;ll see more detail when we get to elasticsearch.</p>
+
+<!-- more -->
+
+
+<h4>Apache access hits</h4>
+
+<p>In this image we are viewing records where field _type==&lsquo;apache-access&rsquo; and timestamp is from now to 1 day ago (time filter not visible in image).</p>
+
+<p><img src="http://mfrasier.github.io/images/screenshot_logsene_kibana_1.png"></p>
+
+<p>Recall the apache access logs were assigned the type &lsquo;apache-access&rsquo; in the logstash config.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=&gt;</span> <span class="s2">&quot;/var/log/httpd/api_okcra_ssl_access_log&quot;</span>
+</span><span class='line'>    <span class="n">type</span> <span class="o">=&gt;</span> <span class="s2">&quot;apache-access&quot;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Some ssh probing</h4>
+
+<p>The tall bars are failed attempts to log in via ssh.  Being aware of those sorts of activities is another advantage of centralized logging and reporting.</p>
+
+<p><img src="http://mfrasier.github.io/images/screenshot_kibana_ssh_probing.png"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Query Our Log Records in Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/query-our-log-records-in-logsene/"/>
+    <updated>2014-10-09T16:46:04-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/query-our-log-records-in-logsene</id>
+    <content type="html"><![CDATA[<p>Another way to query our log data is via the exposed ElasticSearch REST API.
+ For more info see <a href="https://sematext.atlassian.net/wiki/display/PUBLOGSENE/Search+through+the+Elasticsearch+API">Search through Elasticsearch API</a> and <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs.html">ElasticSearch API</a></p>
+
+<p>From the referenced document:<br/>
+When you use the API, here are the things you need to know:</p>
+
+<ul>
+<li>host name: logsene-receiver.sematext.com</li>
+<li>port: 80 (443 for HTTPS)</li>
+<li>index name: your Logsene application token - note that this token should be kept secret</li>
+</ul>
+
+
+<h4>Searching</h4>
+
+<p>Let&rsquo;s assume you want to search through your syslog events from the &ldquo;user&rdquo; facility. You could do something like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>curl https://logsene-receiver.sematext.com/LOGSENE-APP-TOKEN/syslog/_search?q=facility:user
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Viewing Log Reports in Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene/"/>
+    <updated>2014-10-09T16:45:39-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene</id>
+    <content type="html"><![CDATA[<p>Now that our log records are stored and queryable by the logging service we&rsquo;d like to make use of our data.  We can generate reports about whatever interests us, be it usage patterns, errors, etc.</p>
+
+<p>The log records can be parsed into discrete fields which can be indexed and subsequently searched and filtered using some exposed form of query.  This is extremely valuable with distributed log sets.</p>
+
+<p>For example I can ask to see all of yesterday&rsquo;s apache access log entries for a particular application where the HTTP return code was >= 400, whether the application was running on one, a dozen, or a hundred servers.</p>
+
+<p>This entry will explore Logsene&rsquo;s reporting interface.  We&rsquo;ll also report on Logsene&rsquo;s more obvious elastic search interfaces in later entries.</p>
+
+<!-- more -->
+
+
+<h2>Logsene reporting web interface</h2>
+
+<p>The field names on the left of the page are parsed from incoming log entries.  Some are system fields while others are log-specific.  Our logs are apache access logs in the combined log format.  That is, we specified our apache httpd server output using &lsquo;LogFormat combined&rsquo; which is a known, common apache web server access log format.</p>
+
+<p><img src="http://mfrasier.github.io/images/Screenshot_logsene_report_1.png"></p>
+
+<p>Combined format is defined like this.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"%h %l %u %t \"%r\" %&gt;s %b \"%{Referer}i\" \"%{User-Agent}i\""</span></code></pre></td></tr></table></div></figure>
+
+
+<p>where the fields are:<br/>
+%h - IP address of client making request<br/>
+%l - client identd <br/>
+%u - user name<br/>
+%t - time of request<br/>
+%r - client request<br/>
+%>s - HTTP response status code<br/>
+%b - size, in bytes, of response<br/>
+%Referer - HTTP header Referer value<br/>
+%User-Agent - HTTP header User-Agent value</p>
+
+<p>See (<a href="http://httpd.apache.org/docs/2.4/logs.html">http://httpd.apache.org/docs/2.4/logs.html</a>) for more info on apache httpd logging.</p>
+
+<p>We are sending logs to logsene using logstash which parses the original log into JSON before sending to logsene.</p>
+
+<p>Remember, we specified the log format in the logstash config file&rsquo;s grok filter section.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">filter</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span><span class="n">type</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;apache-access&quot;</span> <span class="p">{</span>   <span class="c1"># this is where we use the type from the input section</span>
+</span><span class='line'>    <span class="n">grok</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1"># ensure the matching logs use LogFormat combined for this parser</span>
+</span><span class='line'>      <span class="n">match</span> <span class="o">=&gt;</span> <span class="o">[</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;%{COMBINEDAPACHELOG}&quot;</span> <span class="o">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The ElasticSearch server automatically parses the JSON message, storing and indexing each field, making the fields available for queries and display.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Sending Logs to Centralized Logging Services]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/sending-logs-to-centralized-logging-services-s/"/>
+    <updated>2014-10-09T11:59:34-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/sending-logs-to-centralized-logging-services-s</id>
+    <content type="html"><![CDATA[<h2>Sending log entries to hosted logging services (from a linux)</h2>
+
+<p>Below are some instructions on forwarding log entries from a server to a centralized logging service.</p>
+
+<p>There are many advantages to such an arrangement, including</p>
+
+<ul>
+<li>access to logs from multiple related services in a single location.</li>
+<li>access control where different groups can see different views.</li>
+<li>search apis - query log records by indexed fields, time ranges, etc.</li>
+<li>built-in reporting, filtering, etc on web pages and queries via API.</li>
+<li>in virtualized and cloud environments where servers may come and go on-demand the log entries are captured even if the server and it&rsquo;s volumes have gone away.</li>
+</ul>
+
+
+<p>Centralized logging services, or Logging as a Service (LaaS), accept streams of log entries over the network, index them, and make them available to you.</p>
+
+<p>We are going to utilize two LaaS providers in these examples: <a href="http://www.loggly.com">Loggly</a> and <a href="http://www.sematext.com/logsene">Logsene</a>.</p>
+
+<!-- more -->
+
+
+<h3>Loggly</h3>
+
+<p>Create a (free) loggly account from <a href="https://www.loggly.com/">https://www.loggly.com/</a> if you don&rsquo;t have one yet.</p>
+
+<h4>rsyslog</h4>
+
+<p>Loggly has a script to automate the initial process: <a href="https://okcra.loggly.com/sources/setup/linux.">https://okcra.loggly.com/sources/setup/linux.</a>
+There are also links on manually configuring rsyslog or syslog-ng.</p>
+
+<p>Run the following commands and then verify you&rsquo;ve got some new test log entries on loggly&rsquo;s web site.
+Replace the parameters values with those for your loggly account.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>curl -O https://www.loggly.com/install/configure-linux.sh
+</span><span class='line'>sudo bash configure-linux.sh -a &lt;loggly domain name&gt; -t &lt;loggly token&gt; -u &lt;loggly user id&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>apache httpd server</h5>
+
+<p>Now, we set up apache httpd server log file watches in rsyslog to forward web access and error logs to loggly.</p>
+
+<p>Loggly has a script and manual instructions at <a href="https://okcra.loggly.com/sources/setup/apache">https://okcra.loggly.com/sources/setup/apache</a>
+We&rsquo;re going to use manual instructions since our log files have names other than the defaults.</p>
+
+<p>The instance I&rsquo;m using is amazon linux which already has /var/spool/rsyslog.  We&rsquo;ll change ownership of the directory from root:root to syslog:adm as the instructions suggest.  As you will see in the configuration we instruct the rsyslog daemon to use /var/spool/rsyslog as it&rsquo;s work directory and drop to privileges of group adm so we need to give that group write permissions to the work directory.</p>
+
+<p>The install script create we ran earlier created /etc/rsyslog.d/22-loggly.conf which configures rsyslog to forward all messages to logs-01.loggly.com via TCP port 514 using the defined format LogglyFormat.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#          -------------------------------------------------------
+</span><span class='line'>#          Syslog Logging Directives for Loggly (okcra.loggly.com)
+</span><span class='line'>#          -------------------------------------------------------
+</span><span class='line'>
+</span><span class='line'># Define the template used for sending logs to Loggly. Do not change this format.
+</span><span class='line'>$template LogglyFormat,"&lt;%pri%&gt;%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [92aff88c-05a2-480e-b2f4-4d2e4fb395e7@41058] %msg%"
+</span><span class='line'>
+</span><span class='line'># Send messages to Loggly over TCP using the template.
+</span><span class='line'>*.*             @@logs-01.loggly.com:514;LogglyFormat
+</span><span class='line'>
+</span><span class='line'>#          -------------------------------------------------------
+</span><span class='line'>#          End of Syslog Logging Directives for Loggly
+</span><span class='line'>#          -------------------------------------------------------</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We&rsquo;ll create a new file named /etc/rsyslog.d/23-apache-loggly.conf for our apache-related loggly config.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ModLoad imfile
+</span><span class='line'>$InputFilePollInterval 10 
+</span><span class='line'>$PrivDropToGroup adm
+</span><span class='line'>$WorkDirectory /var/spool/rsyslog
+</span><span class='line'>
+</span><span class='line'># Apache access file:
+</span><span class='line'>$InputFileName /var/log/httpd/api_okcra_access_log
+</span><span class='line'>$InputFileTag apache-access:
+</span><span class='line'>$InputFileStateFile stat-apache-access
+</span><span class='line'>$InputFileSeverity info
+</span><span class='line'>$InputFilePersistStateInterval 20000
+</span><span class='line'>$InputRunFileMonitor
+</span><span class='line'>
+</span><span class='line'># Apache SSL access file:
+</span><span class='line'>$InputFileName /var/log/httpd/api_okcra_ssl_access_log
+</span><span class='line'>$InputFileTag apache-ssl-access:
+</span><span class='line'>$InputFileStateFile stat-apache-ssl-access
+</span><span class='line'>$InputFileSeverity info
+</span><span class='line'>$InputFilePersistStateInterval 20000
+</span><span class='line'>$InputRunFileMonitor
+</span><span class='line'>
+</span><span class='line'>#Apache Error file: 
+</span><span class='line'>$InputFileName /var/log/httpd/error.log
+</span><span class='line'>$InputFileTag apache-error:
+</span><span class='line'>$InputFileStateFile stat-apache-error
+</span><span class='line'>$InputFileSeverity error
+</span><span class='line'>$InputFilePersistStateInterval 20000
+</span><span class='line'>$InputRunFileMonitor
+</span><span class='line'>
+</span><span class='line'>#Add a tag for apache events
+</span><span class='line'>$template LogglyFormatApache,"&lt;%pri%&gt;%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [92aff88c-05a2-480e-b2f4-4d2e4fb395e7@41058 tag=\"apache\"] %msg%\n"
+</span><span class='line'>
+</span><span class='line'>if $programname == 'apache-access' then @@logs-01.loggly.com:514;LogglyFormatApache
+</span><span class='line'>if $programname == 'apache-access' then ~
+</span><span class='line'>if $programname == 'apache-ssl-access' then @@logs-01.loggly.com:514;LogglyFormatApache
+</span><span class='line'>if $programname == 'apache-ssl-access' then ~
+</span><span class='line'>if $programname == 'apache-error' then @@logs-01.loggly.com:514;LogglyFormatApache
+</span><span class='line'>if $programname == 'apache-error' then ~</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>also send logs to logsene from rsyslog</h5>
+
+<p>Create a (free) account from <a href="https://www.sematext.com/logsene">https://www.sematext.com/logsene</a> if you don&rsquo;t have one yet.</p>
+
+<p>Create another rsyslog config file, say /etc/rsyslog.d/25-logsene.conf.
+You&rsquo;ll need to add your logsene app token in the config file.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$template LogseneFormat,"&lt;%PRI%&gt;%TIMEREPORTED:::date-rfc3339% %HOSTNAME% %syslogtag%@cee: {\"logsene-app-token\": \"YOUR-LOGSENE-APP-TOKEN-GOES-HERE\", \"message\": \"%msg:::json%\"}\n"
+</span><span class='line'>*.* @@(o)logsene-receiver-syslog.sematext.com;LogseneFormat</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, recycle the rsyslog daemon to get config changes:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo service rsyslog restart</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><a href="http://www.logstash.com">Logstash</a> - log parser, filter, shipper</h3>
+
+<h4>sample install on redhat-style server</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>wget https://download.elasticsearch.org/logstash/logstash/packages/centos/logstash-1.4.2-1_2c0f5a1.noarch.rpm
+</span><span class='line'>sudo rpm -ivh logstash-1.4.2-1_2c0f5a1.noarch.rpm</span></code></pre></td></tr></table></div></figure>
+
+
+<p>create config file(s)
+e.g. /etc/logstash/conf.d/logstash.conf</p>
+
+<figure class='code'><figcaption><span>/etc/logstash/conf.d/logstash.conf </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=&gt;</span> <span class="s2">&quot;/var/log/httpd/api_okcra_ssl_access_log&quot;</span>
+</span><span class='line'>    <span class="n">type</span> <span class="o">=&gt;</span> <span class="s2">&quot;apache-access&quot;</span>  <span class="c1"># a type to identify those logs (will need this later)</span>
+</span><span class='line'>    <span class="n">start_position</span> <span class="o">=&gt;</span> <span class="s2">&quot;beginning&quot;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">filter</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span><span class="n">type</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;apache-access&quot;</span> <span class="p">{</span>   <span class="c1"># this is where we use the type from the input section</span>
+</span><span class='line'>    <span class="n">grok</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1"># ensure the matching logs use LogFormat combined for this parser</span>
+</span><span class='line'>      <span class="n">match</span> <span class="o">=&gt;</span> <span class="o">[</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;%{COMBINEDAPACHELOG}&quot;</span> <span class="o">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1"># this is for logsene elasticsearch format</span>
+</span><span class='line'>  <span class="n">elasticsearch</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;logsene-receiver.sematext.com&quot;</span>
+</span><span class='line'>    <span class="n">port</span> <span class="o">=&gt;</span> <span class="mi">80</span>
+</span><span class='line'>    <span class="n">index</span> <span class="o">=&gt;</span> <span class="s2">&quot;YOUR_LOGSENE_APP_TOKEN_GOES_HERE&quot;</span>
+</span><span class='line'>    <span class="n">protocol</span> <span class="o">=&gt;</span> <span class="s2">&quot;http&quot;</span>
+</span><span class='line'>    <span class="n">manage_template</span> <span class="o">=&gt;</span> <span class="kp">false</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Troubleshooting</h3>
+
+<h4>Debugging rsyslog</h4>
+
+<p>Stop your syslog daemon and run it in the foreground with debugging turned on, printing to stdout.
+These commands worked on my particular system - ymmv.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo system rsyslog stop
+</span><span class='line'>RSYSLOG_DEBUG="Debug" sudo /sbin/rsyslogd -d -n -c5</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Verify network connections to logger endpoints</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo netstat -taupn | grep syslog
+</span><span class='line'>tcp        0      0 10.65.29.118:56116          54.235.102.246:514          ESTABLISHED 5197/rsyslogd
+</span><span class='line'>tcp        0      0 10.65.29.118:35319          54.236.68.122:514           ESTABLISHED 5197/rsyslogd</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Trace IP packets to and from an endpoint</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo tcpdump -nnvvXS dst 54.235.102.246</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting an SSL Certificate]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/08/getting-an-ssl-certificate/"/>
+    <updated>2014-10-08T17:22:42-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/08/getting-an-ssl-certificate</id>
+    <content type="html"><![CDATA[<h2>Getting a certificate to add SSL capability to a public web server</h2>
+
+<p>We need to serve pages on a public web server via the https protocol, in addition to http.  In order to do that, we need a certificate signed by a known, generally trusted, Certificate Authority (CA).</p>
+
+<p>This documents the process we went through for a particular web server</p>
+
+<!-- more -->
+
+
+<h3>Generate a private key and Certificate Signing Request (CSR)</h3>
+
+<p>I&rsquo;m using openssl at an OS X command line; linux would be the same.  Not sure about Windows without cygwin or such.</p>
+
+<p><a href="http://www.sslshopper.com/article-most-common-openssl-commands.html">Handy list of oft-used openssl commands</a></p>
+
+<h4>Generate new 2048 bit RSA private key and CSR in one step.</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>openssl req -new -newkey rsa:2048 -nodes \
+</span><span class='line'>-out api.okcra.org.csr \
+</span><span class='line'>-keyout api.ockra.org.key.pem \
+</span><span class='line'>-subj "/C=US/ST=Virginia/L=Charlottesville/O=OK Collaborative/CN=api.okcra.org" </span></code></pre></td></tr></table></div></figure>
+
+
+<p>The out parameters (-out and -keyout) are file names that will be created.  Give them meaningful names and put them in some directory dedicated to the purpose.  Set restrictive permissions on the key so that only the owner can read it and no one can write it (r&mdash;&mdash;&ndash;).</p>
+
+<p>The -nodes parameter means the private key file is not encrypted, for non-interactive use.
+I used the -subj parameter to specify the certificate subject (aka Distinguished Name or DN). If not specified openssl will prompt for the values.
+This is a host certificate, for a single host name.  The Common Name (CN) portion of the Distinguished Name is the DNS hostname of the server - it must match the name used by clients to connect to the server.</p>
+
+<h5>Verify DN of CSR is what you intended (optional, see man req for more options)</h5>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>openssl req -noout -verify -in api.okcra.org.csr -subject</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Submit CSR to Certificate Authority and download new signed certificate</h3>
+
+<p>The Certificate Authority (CA) will generate and sign a new x.509 SSL certificate based on the values in your CSR.</p>
+
+<p>Typically, from the CA web page, you select the type of certificate (server SSL in this case) and duration, then paste the content of your CSR file generated in step 1 into a text input control.  PEM format is Base64 encoded so it&rsquo;s text.</p>
+
+<p>The new certificate is generated and made available for download at some time in the near future.</p>
+
+<p>Download the new certificate to a file.  I usually name it the same as the key file, replacing &lsquo;key&rsquo; with &lsquo;crt&rsquo;.  e.g. api.ockra.org.crt.pem
+The certificate is publicly readable so file permissions can allow world-read access (e.g. r&ndash;r&ndash;r&ndash;)</p>
+]]></content>
+  </entry>
+  
+</feed>

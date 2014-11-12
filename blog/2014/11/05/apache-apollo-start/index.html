@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Apache Apollo Start - Blog about things</title>
+  <meta name="author" content="Marty Frasier">
+
+  
+  <meta name="description" content="Getting started with Apache Apollo, follow-up project to ActiveMQ It&rsquo;s an all-dancing, all-singing message broker, queue manager, integration &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Blog about things" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Blog about things</a></h1>
+  
+    <h2>blogging experiment about hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mfrasier.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Apache Apollo Start</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-05T19:37:35-05:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>7:37 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>Getting started with Apache Apollo, follow-up project to ActiveMQ</h2>
+
+<p>It&rsquo;s an all-dancing, all-singing message broker, queue manager, integration engine, etc. written in scala, running on JVM.</p>
+
+<p>Web Site: <a href="http://activemq.apache.org/apollo/">http://activemq.apache.org/apollo/</a></p>
+
+<h3>My steps to install a new broker for first steps testing&hellip;</h3>
+
+<ul>
+<li>download the gzip&rsquo;d tar file</li>
+<li>i uncompressed and exploded into /opt/apache-apollo-1.7/</li>
+<li>created a broker named okc-broker</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo /opt/apache-apollo-1.7/bin/apollo okc-broker</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>created link for init service</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo ln -s /opt/okc-broker/bin/apollo-broker-service /etc/init.d/apollo-broker-</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>start service</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo service service apollo-broker-service start</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>python test client CLI for stomp messaging protocol</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo pip install stomp.py
+</span><span class='line'>
+</span><span class='line'>$ python /usr/local/lib/python2.7/dist-packages/stomp -H localhost -P 61613 -V VERBOSE -U admin -W password
+</span><span class='line'> -- or -- stomp ... || stomp --help
+</span><span class='line'>
+</span><span class='line'>&gt; subscribe /topic/okcra-api-ops
+</span><span class='line'>Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "1"
+</span><span class='line'>
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy'
+</span><span class='line'>
+</span><span class='line'>'howdy'
+</span><span class='line'>
+</span><span class='line'>&gt; unsubscribe /topic/okcra-api-ops
+</span><span class='line'>Unsubscribing from "/topic/okcra-api-ops"
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy'
+</span><span class='line'>&gt; subscribe /topic/okcra-api-ops
+</span><span class='line'>Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "2"
+</span><span class='line'>&gt;
+</span><span class='line'>&gt; send /topic/okcra-api-ops 'howdy again'
+</span><span class='line'>
+</span><span class='line'>'howdy again'
+</span><span class='line'>
+</span><span class='line'>&gt; exit</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The default config requires user authentication.  There is one configured user with all rights - admin:password.</p>
+
+<p>The broker configuration, logs, data, etc are under the broker directory; mine was created at /opt/okc-broker.</p>
+
+<h3>a PHP stomp client</h3>
+
+<p>I haven&rsquo;t used PHP in a very long time and then knew nothing about frameworks, autoloaders, etc so this is a bit of a struggle but it&rsquo;s a start.</p>
+
+<h4>install the client package</h4>
+
+<p>Our backend app uses <a href="https://getcomposer.org/">composer</a> to load packages so I&rsquo;m going to integrate with that.  I also found PECL packages but picked composer for this attempt.</p>
+
+<p>I browsed packages at <a href="https://packagist.org/">https://packagist.org/</a> and found <a href="https://packagist.org/packages/fusesource/stomp-php">fusesource/stomp-php</a>.</p>
+
+<p>I added this line to the app&rsquo;s composer.json file <code>&ldquo;fusesource/stomp-php&rdquo;:&ldquo;2.1.1&rdquo;</code></p>
+
+<p>I then installed composer locally following instructions at <a href="https://getcomposer.org/doc/00-intro.md">composer</a> and ran the command to update the app&rsquo;s dependencies.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ curl -sS https://getcomposer.org/installer | php
+</span><span class='line'>$ mv composer.phar /usr/local/bin/composer
+</span><span class='line'>$ composer update</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>php code</h4>
+
+<p>There are example programs in the stomp-php package, under <app>/vendor/fusesource/stomp-php/examples/.</p>
+
+<!-- more -->
+
+
+<p>first.php is, suprisingly enough, the first example I looked at.  I want to send a message to my apollo broker running on my host, listening on port tcp:61613 so I&rsquo;m going to borrow some of the easy-looking code.</p>
+
+<figure class='code'><figcaption><span>first.php </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">require</span> <span class="nx">__DIR__</span><span class="o">.</span><span class="s1">&#39;/../vendor/autoload.php&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// include a library</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">use</span> <span class="nx">FuseSource\Stomp\Stomp</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// make a connection</span>
+</span><span class='line'><span class="nv">$con</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stomp</span><span class="p">(</span><span class="s2">&quot;tcp://localhost:61613&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="c1">// connect</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">();</span>
+</span><span class='line'><span class="c1">// send a message to the queue</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">send</span><span class="p">(</span><span class="s2">&quot;/queue/test&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;Sent message with body &#39;test&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// subscribe to the queue</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">subscribe</span><span class="p">(</span><span class="s2">&quot;/queue/test&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="c1">// receive a message from the queue</span>
+</span><span class='line'><span class="nv">$msg</span> <span class="o">=</span> <span class="nv">$con</span><span class="o">-&gt;</span><span class="na">readFrame</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// do what you want with the message</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span> <span class="nv">$msg</span> <span class="o">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="s2">&quot;Received message with body &#39;</span><span class="si">$msg-&gt;body</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="c1">// mark the message as received in the queue</span>
+</span><span class='line'>    <span class="nv">$con</span><span class="o">-&gt;</span><span class="na">ack</span><span class="p">(</span><span class="nv">$msg</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="s2">&quot;Failed to receive a message</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// disconnect</span>
+</span><span class='line'><span class="nv">$con</span><span class="o">-&gt;</span><span class="na">disconnect</span><span class="p">();</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I put some of the code in my routes.php file to do a quick connect->send->disconnect test by hitting a new route without messing with controllers or authorizations, etc.</p>
+
+<figure class='code'><figcaption><span>routes.php </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'>  <span class="k">use</span> <span class="nx">FuseSource\Stomp\Stomp</span><span class="p">;</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="nx">Route</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">&#39;sendStompMessage&#39;</span><span class="p">,</span> <span class="k">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nv">$queue</span>  <span class="o">=</span> <span class="s1">&#39;/topic/okcra-api-ops&#39;</span><span class="p">;</span>
+</span><span class='line'>  <span class="nv">$msg</span>    <span class="o">=</span> <span class="s1">&#39;message from sendStompMessage handler&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* connection */</span>
+</span><span class='line'>  <span class="k">try</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$stomp</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stomp</span><span class="p">(</span><span class="s1">&#39;tcp://localhost:61613&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$stomp</span><span class="o">-&gt;</span><span class="na">connect</span><span class="p">();</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">StompException</span> <span class="nv">$e</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span><span class="p">(</span><span class="s1">&#39;stomp connection failed: &#39;</span> <span class="o">.</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">getMessage</span><span class="p">());</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* send a message to the queue */</span>
+</span><span class='line'>  <span class="nv">$stomp</span><span class="o">-&gt;</span><span class="na">send</span><span class="p">(</span><span class="nv">$queue</span><span class="p">,</span> <span class="nv">$msg</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// close connection</span>
+</span><span class='line'>  <span class="nb">unset</span><span class="p">(</span><span class="nv">$stomp</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="s1">&#39;sent stomp message&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After some fiddling with whether i needed the use statement and it&rsquo;s placement when it did seem necessary I got this message when hitting the new route:
+<code>{&ldquo;message&rdquo;:&ldquo;Authentication failed. Credentials=[user=]&rdquo;, &hellip;</code></p>
+
+<p>That counts for some progress I suppose.  Documentation is kind of lacking here but I need to add user and password somewhere, probably either the connection uri or the connect() call.  Alternatively, I could turn off authorization but I think I&rsquo;ll leave it on and work through getting connected.  There are other available parameters, like timeouts, virtual hosts, etc.</p>
+
+<p><code>$stomp->connect(&ldquo;admin&rdquo;, &ldquo;password&rdquo;);</code> does the trick.  When the route is hit, it connects, sends a message and disconnects!</p>
+
+<p><a href="stomp.construct%20documentation">http://php.net/manual/en/stomp.construct.php</a> shows the optional username and password parameters plus another optional parameter to supply headers like receipt, timeouts, etc. as an associative array.</p>
+
+<p>To finish up this initial proof of concept I will subsribe to the topic on the virtual machine using the python stomp CLI while hitting the route in web browser on the host box.  If all goes well I&rsquo;ll see messages emmitted at the python client.</p>
+
+<pre>
+$ stomp -H localhost -P 61613 -V VERBOSE -U admin -W password
+
+> subscribe /topic/okcra-api-ops
+Subscribing to "/topic/okcra-api-ops" with acknowledge set to "auto", id set to "1"
+
+- hit URL in browser -
+message from sendStompMessage handler
+
+- hit URL in browser -
+message from sendStompMessage handler
+</pre>
+
+
+<p>Woohoo!  We have completed our quick and dirty proof of concept to emit messages from the server upon some internal event which can be acted upon by loosely-coupled processes intereseted in some or all the events.  One such use case we have is client notification when resource(s) of interest have been modified or used.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marty Frasier</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-11-05T19:37:35-05:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>7:37 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start/" data-via="" data-counturl="http://mfrasier.github.io/blog/2014/11/05/apache-apollo-start/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/10/11/some-elasticsearch-features/" title="Previous Post: some elasticsearch features">&laquo; some elasticsearch features</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/11/08/fun-with-puphpet/" title="Next Post: fun with puPHPet">fun with puPHPet &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/08/fun-with-puphpet/">Fun With puPHPet</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/05/apache-apollo-start/">Apache Apollo Start</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Marty Frasier -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

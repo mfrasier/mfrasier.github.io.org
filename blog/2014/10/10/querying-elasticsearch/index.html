@@ -1,0 +1,369 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Querying Elasticsearch - Blog about things</title>
+  <meta name="author" content="Marty Frasier">
+
+  
+  <meta name="description" content="This post will begin our look at querying elasticsearch directly, via it&rsquo;s search API. We&rsquo;ve looked at reporting and graphing tools like &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Blog about things" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Blog about things</a></h1>
+  
+    <h2>blogging experiment about hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mfrasier.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Querying Elasticsearch</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-10-10T16:40:06-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:40 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This post will begin our look at querying elasticsearch directly, via it&rsquo;s search API.  We&rsquo;ve looked at reporting and graphing tools like Kibana which provide some veneer over the actual queries.  Now we&rsquo;ll see what the queries and responses look like under the covers.</p>
+
+<p>The first query we&rsquo;ll make will search an entire index with no filter provided - we will just dump the data content.</p>
+
+<p>The API is accessible via an HTTP or HTTPS URI using the POST command.  There are many  search flavors available, documented in detail at the <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-search.html">elasticsearch search API</a>; we&rsquo;ll just touch the surface here.
+The search API is accessible using a query parameter or request body.  The query parameter is limited but good for some testing so we&rsquo;ll use that first.</p>
+
+<h4>The simplest search query ever &hellip;</h4>
+
+<p>The URI structure to invoke the simplest elasticsearch query API looks like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/_search</em></p>
+
+<!-- more -->
+
+
+<p>Using curl to invoke the simplest search query here is our response (truncated):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">curl</span> <span class="err">-XPOST</span> <span class="err">http://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/_search</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;took&quot;</span><span class="p">:</span> <span class="mi">56</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;timed_out&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;_shards&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;successful&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;hits&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">6559</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;max_score&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;hits&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>      <span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;OUR-LOGSENE-APP-TOKEN_2014-10-04&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_type&quot;</span><span class="p">:</span> <span class="s2">&quot;apache-access&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;vfo3cnGFR5mU3Yyio_eG7w&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_score&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;_source&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;223.151.106.187 - - [04/Oct/2014:01:40:50 +0000] \&quot;CONNECT api.okcra.org:443 HTTP/1.1\&quot; 404 137 \&quot;-\&quot; \&quot;-\&quot;&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;@version&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;@timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2014-10-04T01:40:50.279Z&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;apache-access&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ip-10-65-29-118&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/var/log/httpd/api_okcra_ssl_access_log&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;clientip&quot;</span><span class="p">:</span> <span class="s2">&quot;223.151.106.187&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;ident&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;auth&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;04/Oct/2014:01:40:50 +0000&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;verb&quot;</span><span class="p">:</span> <span class="s2">&quot;CONNECT&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;api.okcra.org:443&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;httpversion&quot;</span><span class="p">:</span> <span class="s2">&quot;1.1&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;404&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;bytes&quot;</span><span class="p">:</span> <span class="s2">&quot;137&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;referrer&quot;</span><span class="p">:</span> <span class="s2">&quot;\&quot;-\&quot;&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="nt">&quot;agent&quot;</span><span class="p">:</span> <span class="s2">&quot;\&quot;-\&quot;&quot;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>      <span class="p">},</span>
+</span><span class='line'>      <span class="err">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The response is pretty interesting.<br/>
+The metadata at the beginning tells us the query took 56 ms across 16 shards and did not timeout.<br/>
+The hits object is an array of objects, I&rsquo;ve truncated the list at one entry from default of 10 returned objects.  There were 6,559 entries that matched our search criteria.
+The elements beginning with underscore were generated by elasticsearch when the entry was ingested.  Look, <em>_type == &lsquo;apache-access&rsquo;</em> - we&rsquo;ve seen that before!<br/>
+The <em>_source</em> object is the most interesting as it is the JSON message sent from logstash.  The <em>message</em> field is the original log entry line.  The <em>type</em> field was assigned in the logstash input specification.  The other fields are values parsed from the apache combined log format by logstash prior to shipping the json-formatted log to elasticsearch.</p>
+
+<p>You should be able to see how some of the pieces have come together now.  logstash configuration and parser (grok filter) transformed a raw apache log line into json-formatted data, sent it to elasticsearch where it was ingested, indexed by field, and made available over the network via an API for us and our applications to query.  Cool stuff indeed.</p>
+
+<h4>Search within type(s)</h4>
+
+<p>You can optionally add the record type to limit your search within that type.
+For example, if we wished to search only within type apache-access we could use a URI like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/<strong>apache-access</strong>/_search</em></p>
+
+<p>You can add multiple types, by comma-separating them like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/<strong>apache-access,syslog-cee</strong>/_search</em></p>
+
+<h4>Search for records where a field equals some value</h4>
+
+<p>Say, we want to find all apache access records where the http response code was a 400.  We could use a query like this:<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_search<strong>?response:400</strong></em></p>
+
+<h4>A simple query body</h4>
+
+<p>This is the same query as above but uses the Query DSL body<br/>
+<em>http(s)://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_search <strong>-d &lsquo;{ &ldquo;query&rdquo; : { &ldquo;term&rdquo; : { &ldquo;response&rdquo; : &ldquo;400&rdquo;} }}&rsquo;</strong></em></p>
+
+<p>DSL=Domain Specific Language so Query DSL is a language meant to describe queries in elasticsearch.  <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html">Elasticsearch Query DSL documentation</a></p>
+
+<h4>Get a simple count</h4>
+
+<p>There are lots of things we can do - one of which is simply count the number of records for a given type.  An excruciatingly simple example of using the Query DSL to count records of type apache-access might look something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">curl</span> <span class="err">-q</span> <span class="err">-XPOST</span> <span class="err">http://logsene-receiver.sematext.com/OUR-LOGSENE-APP-TOKEN/apache-access/_count?pretty</span> <span class="err">-d</span> <span class="err">&#39;</span><span class="p">{</span>
+</span><span class='line'>  <span class="err">query:</span> <span class="err">{</span>
+</span><span class='line'>    <span class="nt">&quot;match_all&quot;</span><span class="p">:</span> <span class="p">{}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="err">}&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;count&quot;</span><span class="p">:</span> <span class="mi">184</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;_shards&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;successful&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There are currently 184 such records.  Adding query parameter pretty told elasticsearch to pretty print the JSON response for easier consumption by humans.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marty Frasier</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-10-10T16:40:06-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:40 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/elasticsearch/'>elasticsearch</a>, <a class='category' href='/blog/categories/laas/'>laas</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch/" data-via="" data-counturl="http://mfrasier.github.io/blog/2014/10/10/querying-elasticsearch/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/10/10/kibana-and-logsene/" title="Previous Post: kibana and logsene">&laquo; kibana and logsene</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/10/11/some-elasticsearch-features/" title="Next Post: some elasticsearch features">some elasticsearch features &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/08/fun-with-puphpet/">Fun With puPHPet</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/05/apache-apollo-start/">Apache Apollo Start</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Marty Frasier -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Some Elasticsearch Features - Blog about things</title>
+  <meta name="author" content="Marty Frasier">
+
+  
+  <meta name="description" content="Some nifty features of elasticsearch distributed, highly available, redundant, and horizontally scalable architecture
+document store using API &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Blog about things" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Blog about things</a></h1>
+  
+    <h2>blogging experiment about hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mfrasier.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Some Elasticsearch Features</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-10-11T10:24:56-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:24 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Some nifty features of elasticsearch</p>
+
+<p>distributed, highly available, redundant, and horizontally scalable architecture
+document store using API language clients or HTTP REST interface
+indexes are like tables in RDBMS, types are like tables
+Every field in a document is indexed and can be queried.
+CRUD operations are easy
+optimistic concurrency control on update/delete ops using version parameter
+automatic versioning
+update operation merges desired changes
+groovy scripting by default, available in request body
+idempotent operations retry on update with retry_on_conflict parm
+bulk operations
+each document in an index has a type. Every type has its own mapping or schema definition.</p>
+
+<p>simple value searches, ranges, etc
+indexed, analyzed (tokenization, normalization), analyze API
+_all is a system-generated full-text field which can be disabled
+full-text search
+relevance scores in full-text search results
+phrase searches
+highligting results
+sorting results, relevance by default or can specify with sort parm
+filter DSL (term, terms, range, exists, missing, bool,)
+query DSL (match_all, match, multi_match, bool,)
+analytics
+  aggregations, nested</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marty Frasier</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-10-11T10:24:56-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:24 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features/" data-via="" data-counturl="http://mfrasier.github.io/blog/2014/10/11/some-elasticsearch-features/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/10/10/querying-elasticsearch/" title="Previous Post: querying elasticsearch">&laquo; querying elasticsearch</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/11/05/apache-apollo-start/" title="Next Post: apache apollo start">apache apollo start &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/08/fun-with-puphpet/">Fun With puPHPet</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/05/apache-apollo-start/">Apache Apollo Start</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Marty Frasier -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

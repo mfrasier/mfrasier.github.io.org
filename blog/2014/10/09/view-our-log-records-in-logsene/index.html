@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Viewing Log Reports in Logsene - Blog about things</title>
+  <meta name="author" content="Marty Frasier">
+
+  
+  <meta name="description" content="Now that our log records are stored and queryable by the logging service we&rsquo;d like to make use of our data. We can generate reports about &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Blog about things" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Blog about things</a></h1>
+  
+    <h2>blogging experiment about hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mfrasier.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Viewing Log Reports in Logsene</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-10-09T16:45:39-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:45 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Now that our log records are stored and queryable by the logging service we&rsquo;d like to make use of our data.  We can generate reports about whatever interests us, be it usage patterns, errors, etc.</p>
+
+<p>The log records can be parsed into discrete fields which can be indexed and subsequently searched and filtered using some exposed form of query.  This is extremely valuable with distributed log sets.</p>
+
+<p>For example I can ask to see all of yesterday&rsquo;s apache access log entries for a particular application where the HTTP return code was >= 400, whether the application was running on one, a dozen, or a hundred servers.</p>
+
+<p>This entry will explore Logsene&rsquo;s reporting interface.  We&rsquo;ll also report on Logsene&rsquo;s more obvious elastic search interfaces in later entries.</p>
+
+<!-- more -->
+
+
+<h2>Logsene reporting web interface</h2>
+
+<p>The field names on the left of the page are parsed from incoming log entries.  Some are system fields while others are log-specific.  Our logs are apache access logs in the combined log format.  That is, we specified our apache httpd server output using &lsquo;LogFormat combined&rsquo; which is a known, common apache web server access log format.</p>
+
+<p><img src="/images/Screenshot_logsene_report_1.png"></p>
+
+<p>Combined format is defined like this.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"%h %l %u %t \"%r\" %&gt;s %b \"%{Referer}i\" \"%{User-Agent}i\""</span></code></pre></td></tr></table></div></figure>
+
+
+<p>where the fields are:<br/>
+%h - IP address of client making request<br/>
+%l - client identd <br/>
+%u - user name<br/>
+%t - time of request<br/>
+%r - client request<br/>
+%>s - HTTP response status code<br/>
+%b - size, in bytes, of response<br/>
+%Referer - HTTP header Referer value<br/>
+%User-Agent - HTTP header User-Agent value</p>
+
+<p>See (<a href="http://httpd.apache.org/docs/2.4/logs.html">http://httpd.apache.org/docs/2.4/logs.html</a>) for more info on apache httpd logging.</p>
+
+<p>We are sending logs to logsene using logstash which parses the original log into JSON before sending to logsene.</p>
+
+<p>Remember, we specified the log format in the logstash config file&rsquo;s grok filter section.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">filter</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span><span class="n">type</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;apache-access&quot;</span> <span class="p">{</span>   <span class="c1"># this is where we use the type from the input section</span>
+</span><span class='line'>    <span class="n">grok</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1"># ensure the matching logs use LogFormat combined for this parser</span>
+</span><span class='line'>      <span class="n">match</span> <span class="o">=&gt;</span> <span class="o">[</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;%{COMBINEDAPACHELOG}&quot;</span> <span class="o">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The ElasticSearch server automatically parses the JSON message, storing and indexing each field, making the fields available for queries and display.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marty Frasier</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-10-09T16:45:39-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:45 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/laas/'>laas</a>, <a class='category' href='/blog/categories/logging/'>logging</a>, <a class='category' href='/blog/categories/report/'>report</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene/" data-via="" data-counturl="http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/10/09/sending-logs-to-centralized-logging-services-s/" title="Previous Post: Sending logs to centralized logging services">&laquo; Sending logs to centralized logging services</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/10/09/query-our-log-records-in-logsene/" title="Next Post: query our log records in logsene">query our log records in logsene &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/08/fun-with-puphpet/">Fun With puPHPet</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/05/apache-apollo-start/">Apache Apollo Start</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Marty Frasier -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

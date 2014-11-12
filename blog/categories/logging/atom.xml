@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Logging | Blog about things]]></title>
+  <link href="http://mfrasier.github.io/blog/categories/logging/atom.xml" rel="self"/>
+  <link href="http://mfrasier.github.io/"/>
+  <updated>2014-11-11T22:03:50-05:00</updated>
+  <id>http://mfrasier.github.io/</id>
+  <author>
+    <name><![CDATA[Marty Frasier]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Query Our Log Records in Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/query-our-log-records-in-logsene/"/>
+    <updated>2014-10-09T16:46:04-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/query-our-log-records-in-logsene</id>
+    <content type="html"><![CDATA[<p>Another way to query our log data is via the exposed ElasticSearch REST API.
+ For more info see <a href="https://sematext.atlassian.net/wiki/display/PUBLOGSENE/Search+through+the+Elasticsearch+API">Search through Elasticsearch API</a> and <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs.html">ElasticSearch API</a></p>
+
+<p>From the referenced document:<br/>
+When you use the API, here are the things you need to know:</p>
+
+<ul>
+<li>host name: logsene-receiver.sematext.com</li>
+<li>port: 80 (443 for HTTPS)</li>
+<li>index name: your Logsene application token - note that this token should be kept secret</li>
+</ul>
+
+
+<h4>Searching</h4>
+
+<p>Let&rsquo;s assume you want to search through your syslog events from the &ldquo;user&rdquo; facility. You could do something like this:
+&#8220;`
+curl <a href="https://logsene-receiver.sematext.com/LOGSENE-APP-TOKEN/syslog/_search?q=facility:user">https://logsene-receiver.sematext.com/LOGSENE-APP-TOKEN/syslog/_search?q=facility:user</a></p>
+
+<p>&#8220;`</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Viewing Log Reports in Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene/"/>
+    <updated>2014-10-09T16:45:39-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/view-our-log-records-in-logsene</id>
+    <content type="html"><![CDATA[<p>Now that our log records are stored and queryable by the logging service we&rsquo;d like to make use of our data.  We can generate reports about whatever interests us, be it usage patterns, errors, etc.</p>
+
+<p>The log records can be parsed into discrete fields which can be indexed and subsequently searched and filtered using some exposed form of query.  This is extremely valuable with distributed log sets.</p>
+
+<p>For example I can ask to see all of yesterday&rsquo;s apache access log entries for a particular application where the HTTP return code was >= 400, whether the application was running on one, a dozen, or a hundred servers.</p>
+
+<p>This entry will explore Logsene&rsquo;s reporting interface.  We&rsquo;ll also report on Logsene&rsquo;s more obvious elastic search interfaces in later entries.</p>
+
+<!-- more -->
+
+
+<h2>Logsene reporting web interface</h2>
+
+<p>The field names on the left of the page are parsed from incoming log entries.  Some are system fields while others are log-specific.  Our logs are apache access logs in the combined log format.  That is, we specified our apache httpd server output using &lsquo;LogFormat combined&rsquo; which is a known, common apache web server access log format.</p>
+
+<p><img src="/images/Screenshot_logsene_report_1.png"></p>
+
+<p>Combined format is defined like this.
+<code>
+"%h %l %u %t \"%r\" %&gt;s %b \"%{Referer}i\" \"%{User-Agent}i\""
+</code>
+where the fields are:<br/>
+%h - IP address of client making request<br/>
+%l - client identd <br/>
+%u - user name<br/>
+%t - time of request<br/>
+%r - client request<br/>
+%>s - HTTP response status code<br/>
+%b - size, in bytes, of response<br/>
+%Referer - HTTP header Referer value<br/>
+%User-Agent - HTTP header User-Agent value</p>
+
+<p>See (<a href="http://httpd.apache.org/docs/2.4/logs.html">http://httpd.apache.org/docs/2.4/logs.html</a>) for more info on apache httpd logging.</p>
+
+<p>We are sending logs to logsene using logstash which parses the original log into JSON before sending to logsene.</p>
+
+<p>Remember, we specified the log format in the logstash config file&rsquo;s grok filter section.
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">filter</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span><span class="n">type</span><span class="o">]</span> <span class="o">==</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">apache</span><span class="o">-</span><span class="n">access</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">{</span>   <span class="c1"># this is where we use the type from the input section</span>
+</span><span class='line'>    <span class="n">grok</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1"># ensure the matching logs use LogFormat combined for this parser</span>
+</span><span class='line'>      <span class="n">match</span> <span class="o">=&gt;</span> <span class="o">[</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">message</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="sx">%{COMBINEDAPACHELOG}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="o">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>The ElasticSearch server automatically parses the JSON message, storing and indexing each field, making the fields available for queries and display.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Sending Logs to Centralized Logging Services]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/09/sending-logs-to-centralized-logging-services-s/"/>
+    <updated>2014-10-09T11:59:34-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/09/sending-logs-to-centralized-logging-services-s</id>
+    <content type="html"><![CDATA[<h2>Sending log entries to hosted logging services (from a linux)</h2>
+
+<p>Below are some instructions on forwarding log entries from a server to a centralized logging service.</p>
+
+<p>There are many advantages to such an arrangement, including</p>
+
+<ul>
+<li>access to logs from multiple related services in a single location.</li>
+<li>access control where different groups can see different views.</li>
+<li>search apis - query log records by indexed fields, time ranges, etc.</li>
+<li>built-in reporting, filtering, etc on web pages and queries via API.</li>
+<li>in virtualized and cloud environments where servers may come and go on-demand the log entries are captured even if the server and it&rsquo;s volumes have gone away.</li>
+</ul>
+
+
+<p>Centralized logging services, or Logging as a Service (LaaS), accept streams of log entries over the network, index them, and make them available to you.</p>
+
+<p>We are going to utilize two LaaS providers in these examples: <a href="http://www.loggly.com">Loggly</a> and <a href="http://www.sematext.com/logsene">Logsene</a>.</p>
+
+<!-- more -->
+
+
+<h3>Loggly</h3>
+
+<p>Create a (free) loggly account from <a href="https://www.loggly.com/">https://www.loggly.com/</a> if you don&rsquo;t have one yet.</p>
+
+<h4>rsyslog</h4>
+
+<p>Loggly has a script to automate the initial process: <a href="https://okcra.loggly.com/sources/setup/linux.">https://okcra.loggly.com/sources/setup/linux.</a>
+There are also links on manually configuring rsyslog or syslog-ng.</p>
+
+<p>Run the following commands and then verify you&rsquo;ve got some new test log entries on loggly&rsquo;s web site.
+Replace the parameters values with those for your loggly account.</p>
+
+<pre><code>curl -O https://www.loggly.com/install/configure-linux.sh
+sudo bash configure-linux.sh -a &lt;loggly domain name&gt; -t &lt;loggly token&gt; -u &lt;loggly user id&gt;
+</code></pre>
+
+<h5>apache httpd server</h5>
+
+<p>Now, we set up apache httpd server log file watches in rsyslog to forward web access and error logs to loggly.</p>
+
+<p>Loggly has a script and manual instructions at <a href="https://okcra.loggly.com/sources/setup/apache">https://okcra.loggly.com/sources/setup/apache</a>
+We&rsquo;re going to use manual instructions since our log files have names other than the defaults.</p>
+
+<p>The instance I&rsquo;m using is amazon linux which already has /var/spool/rsyslog.  We&rsquo;ll change ownership of the directory from root:root to syslog:adm as the instructions suggest.  As you will see in the configuration we instruct the rsyslog daemon to use /var/spool/rsyslog as it&rsquo;s work directory and drop to privileges of group adm so we need to give that group write permissions to the work directory.</p>
+
+<p>The install script create we ran earlier created /etc/rsyslog.d/22-loggly.conf which configures rsyslog to forward all messages to logs-01.loggly.com via TCP port 514 using the defined format LogglyFormat.</p>
+
+<pre><code>#          -------------------------------------------------------
+#          Syslog Logging Directives for Loggly (okcra.loggly.com)
+#          -------------------------------------------------------
+
+# Define the template used for sending logs to Loggly. Do not change this format.
+$template LogglyFormat,"&lt;%pri%&gt;%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [92aff88c-05a2-480e-b2f4-4d2e4fb395e7@41058] %msg%"
+
+# Send messages to Loggly over TCP using the template.
+*.*             @@logs-01.loggly.com:514;LogglyFormat
+
+#          -------------------------------------------------------
+#          End of Syslog Logging Directives for Loggly
+#          -------------------------------------------------------
+</code></pre>
+
+<p>We&rsquo;ll create a new file named /etc/rsyslog.d/23-apache-loggly.conf for our apache-related loggly config.</p>
+
+<pre><code>$ModLoad imfile
+$InputFilePollInterval 10 
+$PrivDropToGroup adm
+$WorkDirectory /var/spool/rsyslog
+
+# Apache access file:
+$InputFileName /var/log/httpd/api_okcra_access_log
+$InputFileTag apache-access:
+$InputFileStateFile stat-apache-access
+$InputFileSeverity info
+$InputFilePersistStateInterval 20000
+$InputRunFileMonitor
+
+# Apache SSL access file:
+$InputFileName /var/log/httpd/api_okcra_ssl_access_log
+$InputFileTag apache-ssl-access:
+$InputFileStateFile stat-apache-ssl-access
+$InputFileSeverity info
+$InputFilePersistStateInterval 20000
+$InputRunFileMonitor
+
+#Apache Error file: 
+$InputFileName /var/log/httpd/error.log
+$InputFileTag apache-error:
+$InputFileStateFile stat-apache-error
+$InputFileSeverity error
+$InputFilePersistStateInterval 20000
+$InputRunFileMonitor
+
+#Add a tag for apache events
+$template LogglyFormatApache,"&lt;%pri%&gt;%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [92aff88c-05a2-480e-b2f4-4d2e4fb395e7@41058 tag=\"apache\"] %msg%\n"
+
+if $programname == 'apache-access' then @@logs-01.loggly.com:514;LogglyFormatApache
+if $programname == 'apache-access' then ~
+if $programname == 'apache-ssl-access' then @@logs-01.loggly.com:514;LogglyFormatApache
+if $programname == 'apache-ssl-access' then ~
+if $programname == 'apache-error' then @@logs-01.loggly.com:514;LogglyFormatApache
+if $programname == 'apache-error' then ~
+</code></pre>
+
+<h5>also send logs to logsene from rsyslog</h5>
+
+<p>Create a (free) account from <a href="https://www.sematext.com/logsene">https://www.sematext.com/logsene</a> if you don&rsquo;t have one yet.</p>
+
+<p>Create another rsyslog config file, say /etc/rsyslog.d/25-logsene.conf.
+You&rsquo;ll need to add your logsene app token in the config file.
+<code>
+$template LogseneFormat,"&lt;%PRI%&gt;%TIMEREPORTED:::date-rfc3339% %HOSTNAME% %syslogtag%@cee: {\"logsene-app-token\": \"YOUR-LOGSENE-APP-TOKEN-GOES-HERE\", \"message\": \"%msg:::json%\"}\n"
+*.* @@(o)logsene-receiver-syslog.sematext.com;LogseneFormat
+</code></p>
+
+<p>Next, recycle the rsyslog daemon to get config changes:
+<code>
+sudo service rsyslog restart
+</code></p>
+
+<h3><a href="http://www.logstash.com">Logstash</a> - log parser, filter, shipper</h3>
+
+<h4>sample install on redhat-style server</h4>
+
+<pre><code>wget https://download.elasticsearch.org/logstash/logstash/packages/centos/logstash-1.4.2-1_2c0f5a1.noarch.rpm
+sudo rpm -ivh logstash-1.4.2-1_2c0f5a1.noarch.rpm
+</code></pre>
+
+<p>create config file(s)
+e.g. /etc/logstash/conf.d/logstash.conf
+<figure class='code'><figcaption><span>/etc/logstash/conf.d/logstash.conf </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">httpd</span><span class="o">/</span><span class="n">api_okcra_ssl_access_log</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">type</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">apache</span><span class="o">-</span><span class="n">access</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>  <span class="c1"># a type to identify those logs (will need this later)</span>
+</span><span class='line'>    <span class="n">start_position</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">beginning</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;filter {</span>
+</span><span class='line'><span class="sr">  if [type] == &amp;ldquo;apache-access&amp;rdquo; {   # this is where we use the type from the input section</span>
+</span><span class='line'><span class="sr">    grok {</span>
+</span><span class='line'><span class="sr">      # ensure the matching logs use LogFormat combined for this parser</span>
+</span><span class='line'><span class="sr">      match =&gt; [ &amp;ldquo;message&amp;rdquo;, &amp;ldquo;%{COMBINEDAPACHELOG}&amp;rdquo; ]</span>
+</span><span class='line'><span class="sr">    }</span>
+</span><span class='line'><span class="sr">  }</span>
+</span><span class='line'><span class="sr">}&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1"># this is for logsene elasticsearch format</span>
+</span><span class='line'>  <span class="n">elasticsearch</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">host</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">logsene</span><span class="o">-</span><span class="n">receiver</span><span class="o">.</span><span class="n">sematext</span><span class="o">.</span><span class="n">com</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">port</span> <span class="o">=&gt;</span> <span class="mi">80</span>
+</span><span class='line'>    <span class="n">index</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="no">YOUR_LOGSENE_APP_TOKEN_GOES_HERE</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span>
+</span><span class='line'>    <span class="n">protocol</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">http</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">manage_template</span> <span class="o">=&gt;</span> <span class="kp">false</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h3>Troubleshooting</h3>
+
+<h4>Debugging rsyslog</h4>
+
+<p>Stop your syslog daemon and run it in the foreground with debugging turned on, printing to stdout.
+These commands worked on my particular system - ymmv.
+<code>
+sudo system rsyslog stop
+RSYSLOG_DEBUG="Debug" sudo /sbin/rsyslogd -d -n -c5
+</code></p>
+
+<h4>Verify network connections to logger endpoints</h4>
+
+<pre><code>sudo netstat -taupn | grep syslog
+tcp        0      0 10.65.29.118:56116          54.235.102.246:514          ESTABLISHED 5197/rsyslogd
+tcp        0      0 10.65.29.118:35319          54.236.68.122:514           ESTABLISHED 5197/rsyslogd
+</code></pre>
+
+<h4>Trace IP packets to and from an endpoint</h4>
+
+<pre><code>sudo tcpdump -nnvvXS dst 54.235.102.246
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>

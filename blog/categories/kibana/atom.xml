@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Kibana | Blog about things]]></title>
+  <link href="http://mfrasier.github.io/blog/categories/kibana/atom.xml" rel="self"/>
+  <link href="http://mfrasier.github.io/"/>
+  <updated>2014-11-11T22:03:50-05:00</updated>
+  <id>http://mfrasier.github.io/</id>
+  <author>
+    <name><![CDATA[Marty Frasier]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Kibana and Logsene]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/10/10/kibana-and-logsene/"/>
+    <updated>2014-10-10T06:46:07-04:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/10/10/kibana-and-logsene</id>
+    <content type="html"><![CDATA[<p>Kibana is the name of a visualization tool for elasticsearch; it runs in your web browser.  Kibana enables you to query and view records from your elasticsearch repository.  It&rsquo;s easy to host Kibana yourself or, as we are doing here, use a hosted version.</p>
+
+<p>The data and query interface are the same as we saw in the reporting entry, of which we&rsquo;ll see more detail when we get to elasticsearch.</p>
+
+<!-- more -->
+
+
+<h4>Apache access hits</h4>
+
+<p>In this image we are viewing records where field _type==&lsquo;apache-access&rsquo; and timestamp is from now to 1 day ago (time filter not visible in image).</p>
+
+<p><img src="/images/screenshot_logsene_kibana_1.png"></p>
+
+<p>Recall the apache access logs were assigned the type &lsquo;apache-access&rsquo; in the logstash config.</p>
+
+<p><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='rb'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">httpd</span><span class="o">/</span><span class="n">api_okcra_ssl_access_log</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">type</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">apache</span><span class="o">-</span><span class="n">access</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h4>Some ssh probing</h4>
+
+<p>The tall bars are failed attempts to log in via ssh.  Being aware of those sorts of activities is another advantage of centralized logging and reporting.</p>
+
+<p><img src="/images/screenshot_kibana_ssh_probing.png"></p>
+]]></content>
+  </entry>
+  
+</feed>

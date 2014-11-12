@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Fun With puPHPet - Blog about things</title>
+  <meta name="author" content="Marty Frasier">
+
+  
+  <meta name="description" content="puPHPet is a nifty tool to help configure a virtual PHP development evironment. It uses vagrant to manage virtual machines with puppet to configure &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Blog about things" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Blog about things</a></h1>
+  
+    <h2>blogging experiment about hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mfrasier.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Fun With puPHPet</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-08T09:48:32-05:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>9:48 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><a href="http://puphpet.com/">puPHPet</a> is a nifty tool to help configure a virtual PHP development evironment.  It uses <a href="https://www.vagrantup.com/">vagrant</a> to manage virtual machines with <a href="https://docs.puppetlabs.com/">puppet</a> to configure the machine.  It&rsquo;s a great start but we need some additional configurations.  This is the story of extending puPHPet to our needs.</p>
+
+<h3>puppet hiera</h3>
+
+<p>Recent puPHPpet uses puppet&rsquo;s hiera facility to provide configuration information to puppet at runtime.  I would like to utilize hiera for our additional configurations but puPHPet only seems to utilize hiera sources for a small subset of parameters.  puPHPpet help mentions a common.yaml hiera file but the code uses config.yaml instead.  That&rsquo;s confusing but ../puphpet/puppet/hiera.yaml spells it out for us.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>--
+</span><span class='line'>:backends: yaml
+</span><span class='line'>:yaml:
+</span><span class='line'>    :datadir: '/vagrant/puphpet'
+</span><span class='line'>:hierarchy:
+</span><span class='line'>    - config
+</span><span class='line'>:logger: console</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>read hiera from yaml</h5>
+
+<p>Puppet provides a command-line tool to test the hiera lookup.  Here is a simple example running on the virtual machine.</p>
+
+<!-- more -->
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ hiera postgresql --yaml /vagrant/puphpet/config.yaml --config /vagrant/puphpet/puppet/hiera.yaml
+</span><span class='line'>{"install"=>"1",
+</span><span class='line'> "settings"=>
+</span><span class='line'>  {"root_password"=>"bigsecret",
+</span><span class='line'>   "user_group"=>"postgres",
+</span><span class='line'>   "encoding"=>"UTF8",
+</span><span class='line'>   "version"=>"9.3",
+</span><span class='line'>   "listen_addresses"=>"*"},
+</span><span class='line'> "databases"=>
+</span><span class='line'>  {"YqjrqQdPkxGG"=>
+</span><span class='line'>    {"grant"=>"ALL",
+</span><span class='line'>     "name"=>"db_name",
+</span><span class='line'>     "user"=>"db_user",
+</span><span class='line'>     "password"=>"biggersecret",
+</span><span class='line'>     "sql_file"=>"/var/www/database/dumps/smalldump.sql"}},
+</span><span class='line'> "adminer"=>0</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>set listen_addresses in postgresql.conf to listen on external interface</h5>
+
+<p>I added some new parameters to the auto-generated config.yaml set to confirm puppet is reading them as expected.  I added &lsquo;settings&rsquo;=>&lsquo;listen_addresses&rsquo;.  The value is read as expected, as confirmed in the listing above.</p>
+
+<p>I want to set listen_addresses=&lsquo;*&rsquo; in postgresql.conf so the postgresql server will listen for connections on an external interface(s).</p>
+
+<p>I added the listen_addresses parameter, sourced from hiera, to the invocation of class postgresql::server in puppet/nodes/postqresql.pp.  The values in hash $postgresql_values are already read from the postgresql hiera key at the beginning of this manifest.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>...
+</span><span class='line'>    }-&gt;
+</span><span class='line'>    class { 'postgresql::server':
+</span><span class='line'>      postgres_password =&gt; $postgresql_values['settings']['root_password'],
+</span><span class='line'>      version           =&gt; $postgresql_values['settings']['version'],
+</span><span class='line'>      listen_addresses  =&gt; $postgresql_values['settings']['listen_addresses'],
+</span><span class='line'>      require           =&gt; Group[$postgresql_values['settings']['user_group']],
+</span><span class='line'>    }
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Output from the vagrant provision command shows the localhost value being changed in postgresql server config.  yay.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>==&gt; default: Notice: /Stage[main]/Postgresql::Server::Config/Postgresql::Server::Config_entry[listen_addresses]/Postgresql_conf[listen_addresses]/value: value changed 'localhost' to '*'
+</span><span class='line'>
+</span><span class='line'> ==&gt;/Stage[main]/Main/Iptables_port[kfgtd4YQS5bp]/Firewall[100 tcp/5432]/ensure: created</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>pg_hba.conf</h4>
+
+<p>Now that we are listening for connections on an external interface we must allow our heroic administrator to connect to that virtual host port via the host only network.</p>
+
+<p>After going down the wrong path trying to directly instantiate postgresql::server:pg_hba_rule classes I found postgresql::server accepts an arrray of strings to specifiy access control rules.  I only had to make an additional modification in node/postgresql.pp to pass an array from config.yaml.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>...
+</span><span class='line'>    }-&gt;
+</span><span class='line'>    class { 'postgresql::server':
+</span><span class='line'>      postgres_password =&gt; $postgresql_values['settings']['root_password'],
+</span><span class='line'>      version           =&gt; $postgresql_values['settings']['version'],
+</span><span class='line'>      listen_addresses  =&gt; $postgresql_values['settings']['listen_addresses'],
+</span><span class='line'>      ipv4acls          =&gt; $postgresql_values['settings']['ipv4acls'],
+</span><span class='line'>      require           =&gt; Group[$postgresql_values['settings']['user_group']],
+</span><span class='line'>    }
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Adding ipv4acls parameter above to nodes/postgresql.pp change enables use of ipv4acl entries during server creation.</p>
+
+<p>A couple of sample access control specifications for pg_hba.conf.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>   ipv4acls: 
+</span><span class='line'>      - 'host referall referall_admin 0.00.0/0 md5'
+</span><span class='line'>      - 'hostssl referall jamie 0.0.0.0/0 cert'</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>firewall</h4>
+
+<p>Lastly, puphpet installs firewall rules on the virtual host to allow access to TCP ports 22, 80, and 443.  That means we cannot reach postgresql server port (5432) from outside the virtual machine, i.e. the host.  Lucky for us, by default, the class postgresql::server manages the firewall settings writing a rule to allow access to port TCP/5432.</p>
+
+<p>If postgresql::params::manage_firewall == false we would have to manage our own firewall rules, which is exposed via the firewalls section of config.yaml.  This is what a firewall entry might look like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>firewall:
+</span><span class='line'>    install: '1'
+</span><span class='line'>    rules:
+</span><span class='line'>        voud9p0Db4Qz:
+</span><span class='line'>            port: '5432'
+</span><span class='line'>            priority: '100'
+</span><span class='line'>            proto: tcp
+</span><span class='line'>            action: accept</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>one more thing - sudoers</h4>
+
+<p>puPHPet has an option to populate a database by running a SQL dump file through psql.  It uses this command to accomplish the task.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>command     =&gt; "sudo -u postgres psql ${dbname} &lt; ${sql_file}",</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Vagrant creates user &lsquo;vagrant&rsquo; to enable remote login and management of the virtual machine.  The user has permission, via sudo, to run any command, without specifying a password, as the user root. The psql commmand needs to be run as user postgres to use unix socket for connection to the database.</p>
+
+<p>To enable that capability I added a file, /etc/sudoers.d/10_vagrant, to define a sudoers entry allowing user vagrant to run commands as any user, with no password.  There is already a file /etc/sudoers.d/vagrant that I should probably overwrite with this new entry.</p>
+
+<figure class='code'><figcaption><span>nodes/sudoers.pp </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># nodes/sudoers.pp</span>
+</span><span class='line'><span class="c1"># allow user vagrant to run any command as any user</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s1">&#39;/etc/sudoers.d/10_vagrant&#39;</span><span class="p">:</span>
+</span><span class='line'>  <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">file</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">owner</span> <span class="o">=&gt;</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">group</span> <span class="o">=&gt;</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">mode</span> <span class="o">=&gt;</span> <span class="s1">&#39;0440&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="n">content</span> <span class="o">=&gt;</span> <span class="s1">&#39;vagrant ALL=(ALL) NOPASSWD:ALL&#39;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>virtualbox fail</h4>
+
+<p>There was something wrong with a virtualbox version (4.3.10 or 4.3.11 I think) we were using.  Virtualbox did not properly create interfaces or routes for a hostonly network causing connection failure from the host machine.  Version 4.3.16 and 4.3.18 worked fine.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marty Frasier</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-11-08T09:48:32-05:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>9:48 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet/" data-via="" data-counturl="http://mfrasier.github.io/blog/2014/11/08/fun-with-puphpet/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/11/05/apache-apollo-start/" title="Previous Post: apache apollo start">&laquo; apache apollo start</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/11/09/testing-apollo-with-websocket/" title="Next Post: testing apollo with websocket">testing apollo with websocket &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/08/fun-with-puphpet/">Fun With puPHPet</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/05/apache-apollo-start/">Apache Apollo Start</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Marty Frasier -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
