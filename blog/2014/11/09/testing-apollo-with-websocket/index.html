@@ -9,7 +9,7 @@
   <meta name="author" content="Marty Frasier">
 
   
-  <meta name="description" content="We now have the apollo broker running on our virtual host and a route to hit for our webapp to generate messages. Our setup our web server and PHP &hellip;">
+  <meta name="description" content="We now have the apollo broker running on our virtual host and URI on our webserver to hit to generate messages.We want to display those messages near &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -84,16 +84,15 @@
   </header>
 
 
-<div class="entry-content"><p>We now have the apollo broker running on our virtual host and a route to hit for our webapp to generate messages.</p>
+<div class="entry-content"><p>We now have the apollo broker running on our virtual host and URI on our webserver to hit to generate messages.We want to display those messages near real-time in a web browser on the host machine.</p>
 
 <h4>Our setup</h4>
 
 <ul>
-<li>our web server and PHP backend app are running on our virtual machine (IP=10.0.0.10).</li>
+<li>web server and PHP backend app are running on our virtual machine (IP=10.0.0.10).</li>
 <li>apache apollo broker is running on the virtual machine.</li>
-<li>our webapp server will send a test message to tcp://localhost:61613/topic/okcra-api-ops when route sendStompMessage is hit.</li>
-<li>added a firewall rule to allow access to port tcp/61623 where apollo is listening for websocket connections.</li>
-<li>we want to display those messages near real-time in a web browser, running on the host.</li>
+<li>our webapp server will send a test message to tcp://localhost:61613/topic/okcra-api-ops when URI /sendStompMessage is hit.</li>
+<li>added a firewall rule on virtual machine to allow access to port tcp/61623 where apollo is listening for websocket connections.</li>
 </ul>
 
 
@@ -101,7 +100,7 @@
 
 <p>Apollo is shipped with example code, one of which is a websockets example.  The html page is located at <APOLLO_INSTALL_DIR>/examples/stomp/websocket/index.html.</p>
 
-<p>We will load that page into our browser, fill in our connection details, and connect to the apollo broker on our virtual hosts.  When successful, it will wait and display any new messages  appearing in the topic or queue.</p>
+<p>We will load that page into our browser, fill in our connection details, and connect to the apollo broker on our virtual hosts.  When successful, it will wait and display any new messages appearing in the topic or queue we have registered interest in.</p>
 
 <!-- more -->
 
