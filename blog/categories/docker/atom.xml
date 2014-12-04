@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Docker | Blog about things]]></title>
+  <link href="http://mfrasier.github.io/blog/categories/docker/atom.xml" rel="self"/>
+  <link href="http://mfrasier.github.io/"/>
+  <updated>2014-12-03T21:12:16-05:00</updated>
+  <id>http://mfrasier.github.io/</id>
+  <author>
+    <name><![CDATA[Marty Frasier]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Docker Websocket Chat Sample]]></title>
+    <link href="http://mfrasier.github.io/blog/2014/12/03/docker-websocket-chat-sample/"/>
+    <updated>2014-12-03T17:55:26-05:00</updated>
+    <id>http://mfrasier.github.io/blog/2014/12/03/docker-websocket-chat-sample</id>
+    <content type="html"><![CDATA[<p>We&rsquo;ve decided to use <a href="http://docker.io">docker</a> containers to package and deploy application components as nano services.  This post documents initial experimentation to build and run a sample application as a service.</p>
+
+<p>The application is a <a href="http://projects.spring.io/spring-integration/">spring integration</a> stomp over websockets chat sample app.  It is a java application running in an embedded tomcat container, packaged as a stanadalone (uber) jar.</p>
+
+<p>This type of application seems to be a great fit for a docker container</p>
+
+<ul>
+<li>self-contained; includes dependencies</li>
+<li>provides a service</li>
+<li>consists of one process</li>
+<li>can be used by other services (or people but we&rsquo;ll pretend it&rsquo;s a messaging service for our applications)</li>
+</ul>
+
+
+<!-- more -->
+
+
+<h4>install docker</h4>
+
+<p>I&rsquo;m using OS X so I used the installation instructions found <a href="https://docs.docker.com/installation/mac/">here</a>.  Be sure to do the boot2docker bit.</p>
+
+<p>Use whatever is appropriate for your OS.</p>
+
+<h4>get application code</h4>
+
+<p>I&rsquo;m using Spring integration samples from <a href="https://github.com/SpringSource/spring-integration-samples">here</a>.
+I cloned the git repo locally using
+<code>
+git clone git@github.com:spring-projects/spring-integration-samples.git ~/spring-integration-samples
+</code></p>
+
+<p>Modify the index.html a bit so the host:port are not hard-coded:
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>diff &ndash;git a/applications/stomp-chat/src/main/resources/static/index.html b/applications/stomp-chat/src/main/resources/static/index.html
+</span><span class='line'>index 9add0e0..2e99b6e 100644
+</span><span class='line'>&mdash; a/applications/stomp-chat/src/main/resources/static/index.html
+</span><span class='line'>+++ b/applications/stomp-chat/src/main/resources/static/index.html
+</span><span class='line'>@@ -1,8 +1,8 @@
+</span><span class='line'> &lt;html&gt;
+</span><span class='line'> &lt;head&gt;
+</span><span class='line'>     &lt;title&gt;WebSocket Chat&lt;/title&gt;
+</span><span class='line'>-    &lt;script src="http://localhost:8080/sockjs.js"&gt;&lt;/script&gt;
+</span><span class='line'>-    &lt;script src="http://localhost:8080/stomp.js"&gt;&lt;/script&gt;
+</span><span class='line'>+    &lt;script src="http://mfrasier.github.io/sockjs.js"&gt;&lt;/script&gt;
+</span><span class='line'>+    &lt;script src="http://mfrasier.github.io/stomp.js"&gt;&lt;/script&gt;
+</span><span class='line'>     &lt;script type="text/javascript"&gt;&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;     var sock, stompClient, currentUser, subscriptions = {};
+</span><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;@@ -11,7 +11,7 @@
+</span><span class='line'>             var userValue = document.getElementById(&lsquo;user&rsquo;);
+</span><span class='line'>             if (userValue.value != &ldquo;&rdquo;) {
+</span><span class='line'>                 currentUser = userValue.value;
+</span><span class='line'>-                sock = new SockJS(&lsquo;&lt;a href="http://localhost:8080/chat"&gt;http://localhost:8080/chat&lt;/a&gt;&rsquo;);
+</span><span class='line'>+                sock = new SockJS(&lsquo;/chat&rsquo;);
+</span><span class='line'>                 stompClient = Stomp.over(sock);</span></code></pre></td></tr></table></div></figure></p>
+
+<h4>run code locally</h4>
+
+<p>from <code>~/spring-integration-samples</code> directory run
+<code>
+./gradlew stomp-chat:run
+</code></p>
+
+<p>using a browser point to <a href="http://localhost:8080/">http://localhost:8080/</a> and play with the app.</p>
+
+<h4>build uber jar</h4>
+
+<pre><code>./gradlew stomp-chat:build
+</code></pre>
+
+<p>will build and test the app.</p>
+
+<p>The file we will use is <code>applications/stomp-chat/build/libs/stomp-chat-3.0.0.BUILD-SNAPSHOT.jar</code></p>
+
+<h4>build docker image</h4>
+
+<p>Make new empty directory for the Dockerfile and context (files destined for image) and copy the jar file there.</p>
+
+<pre><code>mkdir ~/docker-chat; cd $_
+cp ~/spring-integration-samples/applications/stomp-chat/build/libs/stomp-chat-3.0.0.BUILD-SNAPSHOT.jar .
+</code></pre>
+
+<h5>Dockerfile</h5>
+
+<p>create Dockerfile and populate with these lines:
+<code>
+FROM dockerfile/java:oracle-java7
+ADD stomp-chat-3.0.0.BUILD-SNAPSHOT.jar /app/
+EXPOSE 8080
+ENTRYPOINT ["/usr/bin/java", "-jar", "/app/stomp-chat-3.0.0.BUILD-SNAPSHOT.jar"]
+</code></p>
+
+<p>Those instructions tell docker to</p>
+
+<ul>
+<li>use a base image that has java installed</li>
+<li>copy our jar file into the /app directory (creating the directory if needed)</li>
+<li>make port 8080 available for mapping</li>
+<li>execute the jar file when the container is started</li>
+</ul>
+
+
+<h5>create docker image</h5>
+
+<p>On OS X I need to point at my docker vm to communicate with the daemon.  I can get the necessary environment variable exports using
+<code>
+boot2docker shellinit
+Writing /Users/mfrasier/.boot2docker/certs/boot2docker-vm/ca.pem
+Writing /Users/mfrasier/.boot2docker/certs/boot2docker-vm/cert.pem
+Writing /Users/mfrasier/.boot2docker/certs/boot2docker-vm/key.pem
+    export DOCKER_HOST=tcp://192.168.59.103:2376
+    export DOCKER_CERT_PATH=/Users/mfrasier/.boot2docker/certs/boot2docker-vm
+    export DOCKER_TLS_VERIFY=1
+</code>
+Copy the export commands and paste in shell to execute.</p>
+
+<h5>Build the image</h5>
+
+<pre><code>docker build -t mfrasier/stomp-chat .
+Sending build context to Docker daemon 56.79 MB
+Sending build context to Docker daemon
+Step 0 : FROM dockerfile/java:oracle-java7
+ ---&gt; 8fb1905f5b5e
+Step 1 : ADD stomp-chat-3.0.0.BUILD-SNAPSHOT.jar /app/
+ ---&gt; Using cache
+ ---&gt; 5fa52eb71231
+Step 2 : EXPOSE 8080
+ ---&gt; Using cache
+ ---&gt; 940aae24f7bc
+Step 3 : ENTRYPOINT /usr/bin/java -jar /app/stomp-chat-3.0.0.BUILD-SNAPSHOT.jar
+ ---&gt; Using cache
+ ---&gt; b05640830c5b
+Successfully built b05640830c5b
+</code></pre>
+
+<p>The -t switch tags the image with a name used later to reference the image.</p>
+
+<p>Verify the image exists
+<code>
+docker images
+REPOSITORY            TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+mfrasier/stomp-chat   latest              b05640830c5b        23 hours ago        754.2 MB
+</code></p>
+
+<h4>create and a run docker container from the image</h4>
+
+<pre><code>docker run -p 8080:8080 -d --name chat1 mfrasier/stomp-chat
+882ee0e51db9c809906e2f577a56714413bb4daa0d6213ecaa3ba51b23d8ebc8
+</code></pre>
+
+<p>The run command returns the container id.
+We should now have a running container which has mapped it&rsquo;s port 8080 to the vm port 8080 (that&rsquo;s what the -p switch does).
+The -d switch tells the container to run detached.
+The &ndash;name switch gives the container a name we can use to reference it, besides the id.</p>
+
+<p>We can verify the container is running with the docker ps command.
+<code>
+docker ps
+CONTAINER ID        IMAGE                        COMMAND                CREATED             STATUS              PORTS                    NAMES
+882ee0e51db9        mfrasier/stomp-chat:latest   "/usr/bin/java -jar    22 hours ago        Up About a minute   0.0.0.0:8080-&gt;8080/tcp   chat1
+</code></p>
+
+<h4>test app running in container</h4>
+
+<p>on my host the docker vm is at IP address <code>192.168.59.103</code> so I point my browser to <code><a href="http://192.168.59.103:8080">http://192.168.59.103:8080</a></code> to test the app.  Be sure to login from multiple browser pages as different people to get the full effect!</p>
+]]></content>
+  </entry>
+  
+</feed>

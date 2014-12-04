@@ -9,7 +9,7 @@
   <meta name="author" content="Marty Frasier">
 
   
-  <meta name="description" content="We now have the apollo broker running on our virtual host and URI on our webserver to hit to generate messages.We want to display those messages near &hellip;">
+  <meta name="description" content="We&rsquo;ve decided to use docker containers to package and deploy application components as nano services. This post documents initial &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,52 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/12/03/docker-websocket-chat-sample/">Docker Websocket Chat Sample</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-03T17:55:26-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>5:55 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We&rsquo;ve decided to use <a href="http://docker.io">docker</a> containers to package and deploy application components as nano services.  This post documents initial experimentation to build and run a sample application as a service.</p>
+
+<p>The application is a <a href="http://projects.spring.io/spring-integration/">spring integration</a> stomp over websockets chat sample app.  It is a java application running in an embedded tomcat container, packaged as a stanadalone (uber) jar.</p>
+
+<p>This type of application seems to be a great fit for a docker container</p>
+
+<ul>
+<li>self-contained; includes dependencies</li>
+<li>provides a service</li>
+<li>consists of one process</li>
+<li>can be used by other services (or people but we&rsquo;ll pretend it&rsquo;s a messaging service for our applications)</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/12/03/docker-websocket-chat-sample/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -600,45 +646,9 @@ When you use the API, here are the things you need to know:</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/10/08/getting-an-ssl-certificate/">Getting an SSL Certificate</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-10-08T17:22:42-04:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:22 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>Getting a certificate to add SSL capability to a public web server</h2>
-
-<p>We need to serve pages on a public web server via the https protocol, in addition to http.  In order to do that, we need a certificate signed by a known, generally trusted, Certificate Authority (CA).</p>
-
-<p>This documents the process we went through for a particular web server</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/08/getting-an-ssl-certificate/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/posts/2">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -649,6 +659,10 @@ When you use the API, here are the things you need to know:</p>
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/03/docker-websocket-chat-sample/">Docker Websocket Chat Sample</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/11/09/testing-apollo-with-websocket/">Testing Apollo With Websocket</a>
@@ -664,10 +678,6 @@ When you use the API, here are the things you need to know:</p>
     
       <li class="post">
         <a href="/blog/2014/10/11/some-elasticsearch-features/">Some Elasticsearch Features</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/10/10/querying-elasticsearch/">Querying Elasticsearch</a>
       </li>
     
   </ul>
